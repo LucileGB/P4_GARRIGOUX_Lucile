@@ -4,6 +4,10 @@ from tinydb import TinyDB, Query
 NB_PLAYERS = 8
 NB_ROUNDS = 4
 
+db = TinyDB("db.json")
+players_table = db.table("players")
+tournaments_table = db.table("tournaments")
+rounds_table = db.table("rounds")
 
 class Match:
     def __init__(self, players=([], [])):
@@ -21,7 +25,7 @@ class Match:
 
 
 class Round:
-    def __init__(self, name, start=None, end=None, matches=[]):
+    def __init__(self, name, id, start=None, end=None, matches=[]):
         self.name = name
         self.start = start
         self.end = end
@@ -95,16 +99,58 @@ class Tournament:
 
     def new_round(self, liste_players):
         nb_round = len(self.rounds) + 1
-        round = Round(f"Round {nb_round}", start=Round.time_now())
+        round = Round(f"Round {nb_round}", f"{self.date}",
+                        start=Round.time_now())
         self.rounds.append(round)
         # sauvegarder le nouveau round dans db
 
 
 class Player:
-    def __init__(self, first_name, last_name, birth_date, gender, rank, score=0):
+    def __init__(self, first_name, last_name, birth_date, gender,
+                rank=0, score=0):
         self.first_name = first_name
         self.last_name = last_name
         self.birth_date = birth_date
         self.gender = gender
         self.rank = rank
         self.score = score
+
+    def serialize_player(self):
+        serialized_player = {"Prenom": self.first_name, "Nom":
+                            self.last_name,
+                            "Date de naissance": self.birth_date,
+                            "Genre": self.gender, "Classement": self.rank,
+                            "Score": self.score
+                            }
+        players_table.insert(serialized_player)
+
+    def instantiate_player(first_name, last_name):
+        for player in players_table:
+            attributes = list(player.values())
+            result = Player(attributes[0], attributes[1], attributes[2],
+                            attributes[3], attributes[4], attributes[5])
+            return result
+
+    def search_player(first_name, last_name):
+        Players = Query()
+        result = players_table.search(Players.Prenom == first_name
+                                        and Players.Nom == last_name)
+        if len(result) == 0:
+            return False
+        else:
+            return result
+
+    def fetch_all_players():
+        i = 0
+        for player in players_table:
+            j = 0
+            keys = list(player.keys())
+            attributes = list(player.values())
+            print(f"\n{i}. {attributes[0].upper()} {attributes[1].upper()}")
+            i += 1
+            for key in keys:
+                print(f"{keys[j]} : {attributes[j]}")
+                j += 1
+
+    def select_player(i):
+        print player_table[i]

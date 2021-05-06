@@ -1,235 +1,179 @@
-#Container code by Bryan Oakley.
-import tkinter as tk
-from tkinter import font as tkfont
+welcome_text = """Bienvenue !
+Veuillez taper la lettre correspondant à l'une des options suivantes :
+-  N pour créer un nouveau tournoi ;
+-  C pour continuer un tournoi en cours ;
+-  M pour modifier les classements de joueurs ;
+-  R pour consulter les rapports (classements de joueurs, tournois passés, etc).
+"""
+commands = """Pour retourner à l'écran précédent, tapez \"r\"."""
+menu_tournament = """Bienvenue dans le menu de création de tournoi.
+Pour créer un tournoi, veuillez taper les informations suivantes :"""
+menu_players = """Bienvenue dans le menu de sélections de joueurs.
+Si vous souhaitez créer un ou des nouveaux joueurs, tapez 1.
+Sinon, tapez 2.\n"""
+menu_create_players = """Bienvenue dans le menu de création de joueurs.
+Pour créer un joueurs, veuillez taper les informations suivantes :"""
+menu_rapport = """Bienvenue dans le menu de rapports.
+
+"""
 
 
+class Menus:
+    def input_ok(self, inputs, answer):
+        """Check whether a given input is in a given list."""
+        if answer in inputs:
+            return True
+        else:
+            return False
 
-class ChessApp(tk.Tk):
+    def yes_no(self):
+        answers = ["o", "oui", "n", "non"]
+        choice = ""
 
-    def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
+        while self.input_ok(answers, choice.lower()) == False:
+            choice = input("Cela vous convient-il ? (o/n)\n")
+        if choice == "o" or choice == "oui":
+            return True
+        if choice == "n" or choice == "non":
+            return False
 
-        self.title("Gestionnaire de tournois d'échecs")
-        self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
+    def fill_form(self, prompts=[]):
+        """Submit a list of prompts of the user, then returns the results."""
+        answers = []
+        for prompt in prompts:
+            answer = input(prompt)
+            answers.append(answer)
+        return answers
 
-        # the container is where we'll stack a bunch of frames
-        # on top of each other, then the one we want visible
-        # will be raised above the others
-        container = tk.Frame(self)
-        container.grid()
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
+    def change_form(self, list=[]):
+        """Take care of swapping one selected article in a list of answers
+        with a new input from the user."""
+        i = 1
+        for item in list:
+            print(f"{i}. {item}")
+            i += 1
+        choice = 0
+        while self.input_ok(range(1, len(list)+1), int(choice)) == False:
+            choice = input("Veuillez taper le chiffre correspondant au champs à modifier.\n")
+        new_answer = input("Veuillez entrer une nouvelle réponse.\n")
+        list.pop(int(choice)-1)
+        list.insert(int(choice)-1, new_answer)
+        answer = self.yes_no()
+        if answer == True:
+            j = 1
+            for item in list:
+                print(f"{j}. {item}")
+                j += 1
+            return list
+        else:
+            self.change_form(list)
 
-        self.frames = {}
-        for F in (StartMenu, CreateTournament, AddPlayers, CreatePlayers,
-                TournamentRound, TournamentEnded, RapportsFrame):
-            page_name = F.__name__
-            frame = F(parent=container, controller=self)
-            self.frames[page_name] = frame
+    def print_results(self, fields, answers):
+        i = 0
+        for field in fields:
+            print(f"{fields[i]}{answers[i]}")
+            i += 1
 
-            # put all of the pages in the same location;
-            # the one on the top of the stacking order
-            # will be the one that is visible.
-            frame.grid(row=0, column=0, sticky="nsew")
+class MainMenu(Menus):
+    def main_menu(self):
+        inputs = ["n", "c", "m", "r"]
+        answer = ""
+        while Menus.input_ok(self, inputs, answer) == False:
+            print(welcome_text)
+            answer = input("Votre choix : ").lower()
 
-        self.show_frame("StartMenu")
+        if answer == "n":
+            return "n"
+        elif answer == "c":
+            # reprendra au dernier round du dernier tournoi rentré dans la db
+            pass
+        elif answer == "m":
+            # consultera la db pour afficher rapport(liste de joueur)
+            pass
+        elif answer == "r":
+            #self.reports(self)
+            pass
 
-        menubar = tk.Menu(self)
-        self.config(menu=menubar)
-        file_menu = tk.Menu(menubar, tearoff=False)
-        file_menu.add_command(label="Modifier un classement",
-                            command=lambda: self.show_frame("CreatePlayers"))
-        file_menu.add_command(label="Rapports",
-                            command=lambda: self.show_frame("CreateTournament"))
-        file_menu.add_command(label="Quitter", command=self.destroy)
-        menubar.add_cascade(label="Plus d'options", menu=file_menu)
+class TournamentMenu(Menus):
+    def create_tournament(self):
+        form_tournament = [
+            "Nom : ",
+            "Adresse : ",
+            "Date : ",
+            "Date de fin : ",
+            "Contrôle de temps (bullet, blitz ou coup rapide) : ",
+            "Notes ou descriptions : ",
+        ]
 
-    def show_frame(self, page_name):
-        '''Show a frame for the given page name'''
-        frame = self.frames[page_name]
-        frame.tkraise()
+        print(menu_tournament)
+        results = Menus.fill_form(self, form_tournament)
+        Menus.print_results(self, form_tournament, results)
 
+        answer = Menus.yes_no(self)
+        if answer == True:
+            # Téléphoner controller pour qu'il crée une instance de tournois
+            # et génère un premier round, puis appelle un écran tournoi
+            pass
+        else:
+            while answer == False:
+                results = Menus.change_form(self, results)
+                j = 0
+                for item in results:
+                    print(f"{j}. {item}")
+                    j += 1
+                answer = Menus.yes_no(self)
 
-class StartMenu(tk.Frame):
+        def continue_tournament(self):
+            pass
 
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
+class PlayerMenu(Menus):
+    def menu_players(self):
+        answers = ["1", "2"]
+        choice = ""
+        while Menus.input_ok(self, answers, choice) == False:
+            choice = input(menu_players)
+        confirm = Menus.yes_no(self)
+        if confirm == True:
+            if choice == "1":
+                #Créer écran character selection
+                self.player_selection()
+            else:
+                return "2"
+        else:
+            self.menu_players()
 
-        title_frame = tk.Frame(self)
-        button_frame = tk.Frame(self)
+        def player_selection(self):
+            pass
 
+class CreatePlayer(Menus):
+    def create_players(self):
+        form_players = [
+            "Prénom : ",
+            "Nom de famille : ",
+            "Date de naissance : ",
+            "Genre : ",
+            "Classement : ",
+        ]
 
-        title_main = tk.Label(title_frame, text = "Menu principal",
-                            font=controller.title_font)
-        new_tournament = tk.Button(button_frame, text="Créer un nouveau tournoi",
-                            command=lambda: controller.show_frame("CreateTournament"))
-        load_tournament = tk.Button(button_frame, text="Reprendre le tournoi actuel",
-                            command=lambda: controller.show_frame("Tournament"))
+        print(commands)
+        print(menu_create_players)
+        results = self.fill_form(form_players)
+        self.print_results(form_players, results)
 
-        title_frame.grid(columnspan=5)
-        button_frame.grid(row=1, columnspan=5)
-        title_main.grid(row=0, column=2, pady=15)
-        new_tournament.grid(row=0, column=1, pady=10, padx=10)
-        load_tournament.grid(row=0, column=3, pady=10, padx=10)
+        answer = self.yes_no()
+        if answer == True:
+            # Téléphoner controller pour qu'il crée une instance de tournois
+            # et génère un premier round, puis appelle un écran tournoi
+            pass
+        else:
+            while answer == False:
+                results = self.change_form(results)
+                i = 1
+                for item in results:
+                    print(f"{i}. {item}")
+                    i += 1
+                answer = self.yes_no()
 
-
-class CreateTournament(tk.Frame):
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-
-        title_frame = tk.Frame(self)
-        top_frame = tk.Frame(self)
-        middle_frame = tk.Frame(self)
-        bottom_frame = tk.Frame(self)
-
-        title_frame.grid(columnspan=4)
-        top_frame.grid(row=1, columnspan=4)
-        middle_frame.grid(row=2, columnspan=3)
-        bottom_frame.grid(row=3, columnspan=3)
-
-        title_tournament = tk.Label(title_frame, text="Créer un tournoi",
-                        font=controller.title_font)
-        name = tk.Label(top_frame, text="Nom")
-        place = tk.Label(top_frame, text="Lieu")
-        date = tk.Label(top_frame, text="Date")
-        end_date = tk.Label(top_frame, text="Date de fin")
-        name_field = tk.Text(top_frame, height=3, width=20)
-        place_field = tk.Text(top_frame, height=3, width=25)
-        date_field = tk.Entry(top_frame)
-        end_date_field = tk.Entry(top_frame)
-        date_field.insert(0, "Format: 31/01/2001")
-        end_date_field.insert(0, "Format: 31/01/2001")
-
-        nb_tour = tk.Label(middle_frame, text="Nombre de tours")
-        time_control = tk.Label(middle_frame, text="Contrôle du temps")
-        nb_tour_field = tk.Entry(middle_frame)
-#Do not forget to change once you're sure (+listbox)
-        time_control_choice = tk.Listbox(middle_frame, height=1)
-        nb_tour_field.insert(0, "4")
-
-        description = tk.Label(bottom_frame, text="Remarques générales")
-        description_field = tk.Text(bottom_frame, height=10, width=40)
-        player_input = tk.Button(bottom_frame, text="Ajouter des joueurs",
-                    command=lambda: controller.show_frame("CreatePlayers"))
-
-        title_tournament.grid(column=1, columnspan=2, pady=15)
-        name.grid(row=0, pady=5)
-        place.grid(row=0, column = 1, pady=5)
-        date.grid(row=2, column=0, pady=5)
-        end_date.grid(row=2, column=1, pady=5)
-        name_field.grid(row=1, pady=5)
-        place_field.grid(row=1, column=1, pady=5)
-        date_field.grid(row=3, column=0, pady=5)
-        end_date_field.grid(row=3, column=1, pady=5)
-
-        nb_tour.grid(row=0, column=0, pady=5)
-        time_control.grid(row=0, column=1, pady=5)
-        nb_tour_field.grid(row=1, column=0, pady=5)
-        time_control_choice.grid(row=1, column=1, pady=5)
-
-        description.grid(row=0, column=1, pady=8, padx=10)
-        description_field.grid(row=1, columnspan=3, pady=5, padx=5)
-        player_input.grid(row=2, column=1, pady=15)
-
-class AddPlayers(tk.Frame):
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-
-        title_frame = tk.Frame(self)
-        top_frame = tk.Frame(self)
-        middle_frame = tk.Frame(self)
-        bottom_frame = tk.Frame(self)
-
-        title_frame.grid(columnspan=3)
-        top_frame.grid(row=1, columnspan=4)
-        middle_frame.grid(row=2, columnspan=3)
-        bottom_frame.grid(row=3, columnspan=3)
-
-        title_tournament = tk.Label(title_frame, text="Ajouter des joueurs",
-                        font=controller.title_font)
-        create_player = tk.Button(title_frame, text="Créer un joueur",
-                        command=lambda: self.show_frame("CreateTournament"))
-
-        okay_button = tk.Button(bottom_frame, text="Valider",
-                        command=lambda: self.show_frame("CreateTournament"))
-
-        title_tournament.grid(column=1, pady=15)
-        create_player.grid(row=1, column=1, pady=10)
-        okay_button.grid(column=1, pady=10)
-
-class CreatePlayers(tk.Frame):
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-
-        title_frame = tk.Frame(self)
-        top_frame = tk.Frame(self)
-        middle_frame = tk.Frame(self)
-        bottom_frame = tk.Frame(self)
-
-        title_frame.grid(columnspan=3)
-        top_frame.grid(row=1, columnspan=3)
-        middle_frame.grid(row=2, columnspan=4)
-        bottom_frame.grid(row=3, columnspan=3)
-
-        first_name_value = tk.StringVar()
-        last_name_value = tk.StringVar()
-        birth_date_value = tk.StringVar()
-        #gender_field = how to make return value?
-        rank_value = tk.StringVar()
-
-        title_player_create = tk.Label(title_frame, text="Créer des joueurs",
-                        font=controller.title_font)
-        first_name = tk.Label(top_frame, text="Prénom")
-        last_name = tk.Label(top_frame, text="Nom de famille")
-        birth_date = tk.Label(top_frame, text="Date de naissance")
-        first_name_field = tk.Entry(top_frame, textvariable=first_name_value)
-        last_name_field = tk.Entry(top_frame, textvariable=last_name_value)
-        birth_date_field = tk.Entry(top_frame, textvariable=birth_date_value)
-        birth_date_field.insert(0, "Format: 31/01/2001")
-
-        gender = tk.Label(middle_frame, text="Genre")
-        rank = tk.Label(middle_frame, text="Classement")
-        gender_field = tk.Listbox(middle_frame, height=2)
-        rank_field = tk.Entry(middle_frame, textvariable=rank_value)
-
-        okay_button = tk.Button(bottom_frame, text="Valider",
-                        command=lambda: self.show_frame("CreateTournament"))
-
-        title_player_create.grid(column=1)
-        first_name.grid(row=0, column=0, padx=5)
-        last_name.grid(row=0, column=1, padx=5)
-        birth_date.grid(row=0, column=2, padx=5)
-        first_name_field.grid(row=1, column=0, padx=5)
-        last_name_field.grid(row=1, column=1, padx=5)
-        birth_date_field.grid(row=1, column=2, padx=5)
-
-        gender.grid(row=0, column=0, padx=5)
-        rank.grid(row=0, column=1, padx=5)
-        gender_field.grid(row=1, column=0, padx=5)
-        rank_field.grid(row=1, column=1, padx=5)
-
-        okay_button.grid(column=1, pady=10)
-
-class TournamentRound(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-
-class TournamentEnded(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-
-class RapportsFrame(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-
-#Fenêtres additionnelles: modifier classement, rapport_window
+class Reports(Menus):
+    def reports(self):
+        inputs = ["sa mère"]

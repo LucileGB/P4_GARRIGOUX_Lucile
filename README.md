@@ -46,6 +46,7 @@ Une fois l'installation finie, vous pouvez lancer l'application en tapant la com
 
 **Pour Mac ou Windows :**
 > main.py
+
 **Pour Linux :**
-./main
+> ./main
 

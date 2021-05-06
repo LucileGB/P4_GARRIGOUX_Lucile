@@ -5,18 +5,26 @@ Veuillez taper la lettre correspondant à l'une des options suivantes :
 -  M pour modifier les classements de joueurs ;
 -  R pour consulter les rapports (classements de joueurs, tournois passés, etc).
 """
-commands = """Pour retourner à l'écran précédent, tapez \"r\"."""
+return_command = """Pour retourner à l'écran précédent, tapez \"r\".\n"""
 menu_tournament = """Bienvenue dans le menu de création de tournoi.
-Pour créer un tournoi, veuillez taper les informations suivantes :"""
+Pour créer un tournoi, veuillez taper les informations suivantes :\n"""
 menu_players = """Bienvenue dans le menu de sélections de joueurs.
 Si vous souhaitez créer un ou des nouveaux joueurs, tapez 1.
 Sinon, tapez 2.\n"""
 menu_create_players = """Bienvenue dans le menu de création de joueurs.
-Pour créer un joueurs, veuillez taper les informations suivantes :"""
+Pour créer un joueurs, veuillez taper les informations suivantes :\n"""
 menu_rapport = """Bienvenue dans le menu de rapports.
-
-"""
-
+Veuillez taper le chiffre correspondant à l'action souhaitée :
+1. Liste de tous les joueurs
+2. Listes de tous les tournois\n"""
+rapport_players = """Veuillez taper le chiffre correspondant à l'action souhaitée :
+1. Ordonner tous les joueurs par ordre alphabétique
+2. Ordonner tous les joueurs par classement\n"""
+rapport_tournament = """Veuillez sélectionner un tournoi :\n"""
+menu_rapport_tournament = """Veuillez taper le chiffre correspondant à l'action souhaitée :
+1. Afficher tous les participants
+2. Afficher tous les tours du tournoi
+3. Afficher tous les matches du tournoi\n"""
 
 class Menus:
     def input_ok(self, inputs, answer):
@@ -53,11 +61,13 @@ class Menus:
             print(f"{i}. {item}")
             i += 1
         choice = 0
-        while self.input_ok(range(1, len(list)+1), int(choice)) == False:
-            choice = input("Veuillez taper le chiffre correspondant au champs à modifier.\n")
+        while self.input_ok(range(1, len(list) + 1), int(choice)) == False:
+            choice = input(
+                "Veuillez taper le chiffre correspondant au champs à modifier.\n"
+            )
         new_answer = input("Veuillez entrer une nouvelle réponse.\n")
-        list.pop(int(choice)-1)
-        list.insert(int(choice)-1, new_answer)
+        list.pop(int(choice) - 1)
+        list.insert(int(choice) - 1, new_answer)
         answer = self.yes_no()
         if answer == True:
             j = 1
@@ -73,6 +83,7 @@ class Menus:
         for field in fields:
             print(f"{fields[i]}{answers[i]}")
             i += 1
+
 
 class MainMenu(Menus):
     def main_menu(self):
@@ -91,8 +102,9 @@ class MainMenu(Menus):
             # consultera la db pour afficher rapport(liste de joueur)
             pass
         elif answer == "r":
-            #self.reports(self)
+            # self.reports(self)
             pass
+
 
 class TournamentMenu(Menus):
     def create_tournament(self):
@@ -126,6 +138,7 @@ class TournamentMenu(Menus):
         def continue_tournament(self):
             pass
 
+
 class PlayerMenu(Menus):
     def menu_players(self):
         answers = ["1", "2"]
@@ -135,7 +148,7 @@ class PlayerMenu(Menus):
         confirm = Menus.yes_no(self)
         if confirm == True:
             if choice == "1":
-                #Créer écran character selection
+                # Créer écran character selection
                 self.player_selection()
             else:
                 return "2"
@@ -144,6 +157,7 @@ class PlayerMenu(Menus):
 
         def player_selection(self):
             pass
+
 
 class CreatePlayer(Menus):
     def create_players(self):
@@ -174,6 +188,10 @@ class CreatePlayer(Menus):
                     i += 1
                 answer = self.yes_no()
 
+
 class Reports(Menus):
     def reports(self):
-        inputs = ["sa mère"]
+        answer = ""
+        print(menu_rapport)
+        if answer == "1":
+            pass

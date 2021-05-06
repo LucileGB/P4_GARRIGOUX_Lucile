@@ -24,14 +24,15 @@ tournoitest.players = all_players
 #test = controllers.MenuControl()
 #test.naviguate_main()
 
-#tournoitest.new_round(all_players)
+tournoitest.new_round(all_players)
 
-for player in all_players:
-    player.serialize_player()
+#for player in all_players:
+#    player.table_insert_player()
 
-everything = models.Player.fetch_all_players()
-print(everything)
-test = models.Player.search_player("Clovis", "Premier")
-print(test)
+#everything = models.Player.fetch_all_players()
+#print(everything)
+#test = models.Player.search_player("Clovis", "Premier")
+#print(test)
 
-test = 
+#select = models.Player.select_player(3)
+

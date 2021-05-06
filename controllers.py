@@ -9,15 +9,6 @@ class CheckForms:
         else:
             return False
 
-    def check_date(input):
-        try:
-            split_input = str(input).split("/")
-            date_string = f"{split_input[2]}-{split_input[1]}-{split_input[0]}"
-            date.fromisoformat(date_string)
-        except Exception:
-            return False
-        return date_string
-
     def check_names(name):
         if len(str(name)) > 0:
             for letter in str(name):
@@ -26,6 +17,15 @@ class CheckForms:
             return str(name)
         else:
             return False
+
+    def check_date(input):
+        try:
+            split_input = str(input).split("/")
+            date_string = f"{split_input[2]}-{split_input[1]}-{split_input[0]}"
+            date.fromisoformat(date_string)
+        except Exception:
+            return False
+        return date_string
 
     def check_rank(rank):
         if str(rank).isnumeric() and int(rank) > 0:
@@ -57,6 +57,7 @@ class CheckForms:
                 return False
         return result
 
+
 class MenuControl:
     def __init__(self):
         self.main_menu = views.MainMenu
@@ -73,4 +74,4 @@ class MenuControl:
             self.tournament_menu.continue_tournament(self)
 
 
-#CONTROLLER : if nb_rounds < 4, new_round, else: classements
+# CONTROLLER : if nb_rounds < 4, new_round, else: classements

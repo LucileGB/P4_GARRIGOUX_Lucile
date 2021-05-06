@@ -29,6 +29,7 @@ Puis activez votre environnement virtuel en tapant la commande suivante :
 Vous constaterez que le préfixe de votre ligne de commande a changé, par exemple comme ceci :
 
 > C:\Users\LG\Documents\Projet 4> venv\Scripts\activate
+
 > (scraper) C:\Users\LG\Projet 4>
 
 Votre environnement virtuel est maintenant activé. Toute installation de paquet se fera dans cet environnement.

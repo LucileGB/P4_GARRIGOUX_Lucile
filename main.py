@@ -3,7 +3,7 @@ import models
 import views
 
 chuuya = models.Player("Chuuya", "Nakahara", "1991-01-31", "homme", 1)
-dazai = models.Player("Osamu", "Dazai", "1991-01-31", "homme", 2)
+dazai = models.Player("Osamu", "Dazai", "1991-01-31", "homme", 1, 6)
 yuuji = models.Player("Yuuji", "Itadori", "1991-01-31", "homme", 3)
 megumi = models.Player("Megumi", "Fushiguro", "1991-01-31", "homme", 4)
 nobara = models.Player("Nobara", "Kugisaki", "1991-01-31", "femme", 5)
@@ -16,23 +16,18 @@ berthe = models.Player("Berthe", "Au grand pied", "1991-01-31", "femme", 5)
 all_players = [dazai, megumi, chuuya, akutagawa, yuuji, nobara, atsushi,
                kyoka, clovis, berthe]
 
-tournoitest = models.Tournament("Tournoi", "31 place des Marroniers",
-                         "31/01/2021", "31/01/2021", "Bullet")
+#tournoitest = models.Tournament("Tournoi", "31 place des Marroniers",
+#                         "31/01/2021", "31/01/2021", "Bullet")
+#tournoitest.players = all_players
 
-tournoitest.players = all_players
-
-#test = controllers.MenuControl()
-#test.naviguate_main()
-
-tournoitest.new_round(all_players)
-
+#INITIALIZE DB
 #for player in all_players:
 #    player.table_insert_player()
 
-#everything = models.Player.fetch_all_players()
-#print(everything)
-#test = models.Player.search_player("Clovis", "Premier")
-#print(test)
+#PLAYERS TEST
+"""test = controllers.PlayerControl()
+main = test.main_player_menu()"""
 
-#select = models.Player.select_player(3)
-
+#MAIN_MENU test
+test = controllers.MainControl()
+test = test.main()

@@ -1,52 +1,26 @@
-welcome_text = """Bienvenue !
-Veuillez taper la lettre correspondant à l'une des options suivantes :
--  N pour créer un nouveau tournoi ;
--  C pour continuer un tournoi en cours ;
--  M pour modifier les classements de joueurs ;
--  R pour consulter les rapports (classements de joueurs, tournois passés, etc).
-"""
-return_command = """Pour retourner à l'écran précédent, tapez \"r\".\n"""
-menu_tournament = """Bienvenue dans le menu de création de tournoi.
-Pour créer un tournoi, veuillez taper les informations suivantes :\n"""
-menu_players = """Bienvenue dans le menu de sélections de joueurs.
-Si vous souhaitez créer un ou des nouveaux joueurs, tapez 1.
-Sinon, tapez 2.\n"""
-menu_create_players = """Bienvenue dans le menu de création de joueurs.
-Pour créer un joueurs, veuillez taper les informations suivantes :\n"""
-menu_rapport = """Bienvenue dans le menu de rapports.
-Veuillez taper le chiffre correspondant à l'action souhaitée :
-1. Liste de tous les joueurs
-2. Listes de tous les tournois\n"""
-rapport_players = """Veuillez taper le chiffre correspondant à l'action souhaitée :
-1. Ordonner tous les joueurs par ordre alphabétique
-2. Ordonner tous les joueurs par classement\n"""
-rapport_tournament = """Veuillez sélectionner un tournoi :\n"""
-menu_rapport_tournament = """Veuillez taper le chiffre correspondant à l'action souhaitée :
-1. Afficher tous les participants
-2. Afficher tous les tours du tournoi
-3. Afficher tous les matches du tournoi\n"""
+import texts
 
 class Menus:
-    def input_ok(self, inputs, answer):
+    def input_ok(self, right_answers, answer):
         """Check whether a given input is in a given list."""
-        if answer in inputs:
+        if answer in right_answers:
             return True
         else:
             return False
 
     def yes_no(self):
         answers = ["o", "oui", "n", "non"]
-        choice = ""
+        answer = ""
 
-        while self.input_ok(answers, choice.lower()) == False:
-            choice = input("Cela vous convient-il ? (o/n)\n")
-        if choice == "o" or choice == "oui":
-            return True
-        if choice == "n" or choice == "non":
-            return False
+        while self.input_ok(answers, answer) == False:
+            answer = input("Cela vous convient-il ? (o/n)\n").lower()
+            if answer == "o" or answer == "oui":
+                return True
+            if answer == "n" or answer == "non":
+                return False
 
     def fill_form(self, prompts=[]):
-        """Submit a list of prompts of the user, then returns the results."""
+        """Submit a list of prompts to the user, then returns the results."""
         answers = []
         for prompt in prompts:
             answer = input(prompt)
@@ -89,21 +63,10 @@ class MainMenu(Menus):
     def main_menu(self):
         inputs = ["n", "c", "m", "r"]
         answer = ""
-        while Menus.input_ok(self, inputs, answer) == False:
-            print(welcome_text)
+        while self.input_ok(inputs, answer) == False:
+            print(texts.Texts.welcome_text)
             answer = input("Votre choix : ").lower()
-
-        if answer == "n":
-            return "n"
-        elif answer == "c":
-            # reprendra au dernier round du dernier tournoi rentré dans la db
-            pass
-        elif answer == "m":
-            # consultera la db pour afficher rapport(liste de joueur)
-            pass
-        elif answer == "r":
-            # self.reports(self)
-            pass
+        return answer
 
 
 class TournamentMenu(Menus):
@@ -117,49 +80,54 @@ class TournamentMenu(Menus):
             "Notes ou descriptions : ",
         ]
 
-        print(menu_tournament)
-        results = Menus.fill_form(self, form_tournament)
-        Menus.print_results(self, form_tournament, results)
+        print(texts.Texts.menu_tournament)
+        results = self.fill_form(form_tournament)
+        self.print_results(form_tournament, results)
 
-        answer = Menus.yes_no(self)
+        answer = self.yes_no()
         if answer == True:
-            # Téléphoner controller pour qu'il crée une instance de tournois
-            # et génère un premier round, puis appelle un écran tournoi
-            pass
+            return results
         else:
             while answer == False:
-                results = Menus.change_form(self, results)
+                results = self.change_form(results)
                 j = 0
                 for item in results:
                     print(f"{j}. {item}")
                     j += 1
-                answer = Menus.yes_no(self)
+                answer = self.yes_no()
 
-        def continue_tournament(self):
-            pass
+    def tournament_round(self, tournament):
+        nb_round = len(tournament.rounds)
+        current_round = tournament.rounds[nb_round-1]
+        i = 1
+
+        print(f"Bienvenue dans {tournament.name}.\n")
+        print(f"Round actuel : {current_round.name}")
+        print(f"Début du round : {current_round.start}")
+        for match in current_round.matches:
+            print(f"{i}. {match[0][0].first_name} {match[0][0].last_name} contre {match[1][0].first_name} {match[1][0].last_name}")
+            i += 1
+
+        outcome = self.enter_results(tournament, current_round)
+        return outcome
+
+    def enter_results(self, tournament, round):
+        results = []
+        i = 1
+        for match in round.matches:
+            print(f"MATCH {i}")
+            result = input(texts.Texts.matches_instructions)
+            results.append(result)
+            i += 1
+
+        confirm = self.yes_no()
+        if confirm == True:
+            return results
+        else:
+            self.enter_results(tournament)
 
 
 class PlayerMenu(Menus):
-    def menu_players(self):
-        answers = ["1", "2"]
-        choice = ""
-        while Menus.input_ok(self, answers, choice) == False:
-            choice = input(menu_players)
-        confirm = Menus.yes_no(self)
-        if confirm == True:
-            if choice == "1":
-                # Créer écran character selection
-                self.player_selection()
-            else:
-                return "2"
-        else:
-            self.menu_players()
-
-        def player_selection(self):
-            pass
-
-
-class CreatePlayer(Menus):
     def create_players(self):
         form_players = [
             "Prénom : ",
@@ -169,29 +137,61 @@ class CreatePlayer(Menus):
             "Classement : ",
         ]
 
-        print(commands)
-        print(menu_create_players)
+        print(texts.Texts.menu_create_players)
         results = self.fill_form(form_players)
         self.print_results(form_players, results)
-
-        answer = self.yes_no()
-        if answer == True:
-            # Téléphoner controller pour qu'il crée une instance de tournois
-            # et génère un premier round, puis appelle un écran tournoi
-            pass
+        confirm = self.yes_no()
+        if confirm == True:
+            return results
         else:
-            while answer == False:
+            while confirm == False:
                 results = self.change_form(results)
                 i = 1
                 for item in results:
                     print(f"{i}. {item}")
                     i += 1
-                answer = self.yes_no()
+                confirm = self.yes_no()
 
+    def menu_players(self):
+        answers = ["1", "2"]
+        prompt = input(texts.Texts.menu_players)
+        return prompt
 
-class Reports(Menus):
-    def reports(self):
+    def menu_selection(self, player_list):
+        player_list()
+        print(texts.Texts.select_players)
+        nb_selected = []
+        while len(nb_selected) < 8:
+            finished = input("Chiffre : ")
+            nb_selected.append(finished)
+            print(f"Joueurs sélectionnés : {nb_selected}")
+
+        confirm = self.yes_no()
+        if confirm == True:
+            return nb_selected
+        else:
+            nb_selected.clear()
+            self.menu_selection(player_list)
+
+class Rankings(Menus):
+    def main_rankings(self):
+        right_answers = ["1", "2", "3"]
         answer = ""
-        print(menu_rapport)
-        if answer == "1":
-            pass
+        while self.input_ok(right_answers, answer) == False:
+            answer = input(texts.Texts.rankings_main)
+        return answer
+
+    def ranking_players(self, list_players):
+        right_answers = ["1", "2", "3"]
+        answer = ""
+        while self.input_ok(right_answers, answer) == False:
+            print(list_players)
+            answer = input(texts.Texts.rankings_players)
+        return answer
+
+    def ranking_tournaments(self):
+#Afficher la liste des tournois façon sélection de joueurs
+        right_answers = ["1", "2", "3"]
+        answer = ""
+        while input_ok(self, right_answers, answer) == False:
+            input(texts.Texts.rankings_tournaments)

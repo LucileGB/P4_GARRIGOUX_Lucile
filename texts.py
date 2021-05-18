@@ -1,32 +1,41 @@
 class Texts:
     welcome_text = """Bienvenue !
-    Veuillez taper la lettre correspondant à l'une des options suivantes :
-    -  N pour créer un nouveau tournoi ;
-    -  C pour continuer un tournoi en cours ;
-    -  R pour consulter les rapports (classements de joueurs, tournois passés, etc).
-    """
-    menu_tournament = """Bienvenue dans le menu de création de tournoi.
-    Pour créer un tournoi, veuillez taper les informations suivantes :\n"""
+Veuillez taper la lettre correspondant à l'une des options suivantes :
+-  N pour créer un nouveau tournoi ;
+-  C pour continuer un tournoi en cours ;
+-  R pour consulter les rapports (classements de joueurs, tournois passés...) ;
+-  Q pour quitter.
+"""
+    menu_tournament = """CREATION DE TOURNOI\n
+Vous pouvez quitter à tout moment en tapant Q.
+Pour créer un tournoi, veuillez taper les informations suivantes :\n"""
     menu_players = """Bienvenue dans le menu d'ajout de joueurs.
+Vous pouvez quitter à tout moment en tapant Q.
 1. Sélectionner des joueurs existants
 2. Créer un nouveau joueur.\n"""
-    menu_create_players = """Bienvenue dans le menu de création de joueurs.
-    Pour créer un joueurs, veuillez taper les informations suivantes :\n"""
+    menu_create_player = """CREATION DE JOUEUR\n
+Vous pouvez quitter à tout moment en tapant Q.
+Pour retourner au menu Joueurs, tapez R.
+Pour créer un joueurs, veuillez taper les informations suivantes :\n"""
+    player_new_date = """Date invalide. Format : jour/mois/année.
+Merci d'entrer une date conforme.\n"""
+    player_new_gender = """Veuillez entrer un genre : homme ou femme.\n"""
+    player_new_rank = """Merci d'entrer un classement en chiffre.\n"""
     menu_rapport = """Bienvenue dans le menu de rapports.
-    Veuillez taper le chiffre correspondant à l'action souhaitée :
-    1. Liste de tous les joueurs
-    2. Listes de tous les tournois\n"""
+Veuillez taper le chiffre correspondant à l'action souhaitée :
+1. Liste de tous les joueurs
+2. Listes de tous les tournois\n"""
     rapport_players = """Veuillez taper le chiffre correspondant à l'action souhaitée :
-    1. Ordonner tous les joueurs par ordre alphabétique
-    2. Ordonner tous les joueurs par classement\n"""
+1. Ordonner tous les joueurs par ordre alphabétique
+2. Ordonner tous les joueurs par classement\n"""
     rapport_tournament = """Veuillez sélectionner un tournoi :\n"""
     menu_rapport_tournament = """Veuillez taper le chiffre correspondant à l'action souhaitée :
-    1. Afficher tous les participants
-    2. Afficher tous les tours du tournoi
-    3. Afficher tous les matches du tournoi\n"""
+1. Afficher tous les participants
+2. Afficher tous les tours du tournoi
+3. Afficher tous les matches du tournoi\n"""
     select_players = """Veuillez taper le chiffre du joueur souhaité.
-Pour sélectionner plusieurs joueurs, veuillez taper les chiffres correspondants séparés par une virgule.
-Exemple : 1, 3, 5\n"""
+A tout momment, vous pouvez quitter en tapant Q.
+Pour retourner au menu Joueurs, tapez R.\n"""
     rankings_main = """RAPPORTS
 Veuillez entrer le chiffre correspondant à la sélection souhaitée.
 1. Liste de tous les joueurs
@@ -46,5 +55,5 @@ Tapez r pour revenir à l'écran Rapport.\n"""
 3. Liste des tours du tournoi
 4. Liste des matchs du tournoi
 5. Retour à l'écran rapport\n"""
-    matches_instructions = """\nEntrer les résultats :
+    matches_instructions = """Entrer les résultats :
 1 si le joueur 1 a gagné, 2 si le joueur 2 a gagné, 3 pour un match nul.\n"""

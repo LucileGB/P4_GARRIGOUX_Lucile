@@ -10,9 +10,16 @@ tournament_table = db.table("tournaments")
 
 
 class Player:
-    def __init__(self, first_name=None, last_name=None,
-                birth_date=None, gender=None,
-                rank=0, score=0, is_playing = False):
+    def __init__(
+        self,
+        first_name=None,
+        last_name=None,
+        birth_date=None,
+        gender=None,
+        rank=0,
+        score=0,
+        is_playing=False,
+    ):
         self.first_name = first_name
         self.last_name = last_name
         self.birth_date = birth_date
@@ -21,11 +28,17 @@ class Player:
         self.score = score
         self.is_playing = is_playing
 
-    def add_participant(self, i):
-        list_players = players_table.all()
-        participant = Player.instantiate_player(list_players[int(i)-1])
-        return participant
-        #set is_playing = True ??
+    def has_double(self):
+        Player = Query()
+        result = players_table.search(
+            (Player.first_name == f"{self.first_name}")
+            & (Player.last_name == f"{self.last_name}")
+            & (Player.birth_date == f"{self.birth_date}")
+        )
+        if len(result) == 0:
+            return False
+        else:
+            return True
 
     def serialize_player(self):
         serialized_player = {
@@ -43,6 +56,25 @@ class Player:
         player = self.serialize_player()
         players_table.insert(player)
 
+    def update_participant(self):
+        Participant = Query()
+        players_table.update({"score": self.score},
+                (Participant["first_name"] == self.first_name)
+                & (Participant["last_name"] == self.last_name)
+                & (Participant["birth_date"] == self.birth_date),
+            )
+        players_table.update({"rank": self.rank},
+                (Participant["first_name"] == self.first_name)
+                & (Participant["last_name"] == self.last_name)
+                & (Participant["birth_date"] == self.birth_date),
+            )
+
+    @staticmethod
+    def clear_participants():
+        players_table.update({"is_playing": "False"})
+        players_table.update({"score": 0})
+
+    @staticmethod
     def instantiate_player(player_dict):
         attributes = list(player_dict.values())
         result = Player(
@@ -56,13 +88,59 @@ class Player:
         )
         return result
 
-    def show_all(self):
+    @staticmethod
+    def is_playing_true(first_name, last_name, birth_date):
+        Participant = Query()
+        players_table.update(
+            {"is_playing": "True"},
+            (Participant["first_name"] == first_name)
+            & (Participant["last_name"] == last_name)
+            & (Participant["birth_date"] == birth_date),
+        )
+
+    @staticmethod
+    def list_abridged(list_to_abridge):
+        """Print an alphabetical, more lisible version of a player list,
+        showing only each player's complete name and birthdate. Also return
+        the alphabetically sorted list."""
+        i = 0
+        abridged_list = Player.alphabetical_list(list_to_abridge)
+        for player in abridged_list:
+            attributes = list(player.values())
+            print(f"\n{i+1}. {attributes[0]} {attributes[1].upper()}")
+            print(f"{attributes[2]}")
+            i += 1
+        return abridged_list
+
+    @staticmethod
+    def list_not_participants():
+        Player = Query()
+        result = players_table.search(Player.is_playing == "False")
+        if len(result) == 0:
+            print("Aucun joueur disponible.")
+            return
+        return result
+
+    @staticmethod
+    def list_participants():
+        Player = Query()
+        result = players_table.search(Player.is_playing == "True")
+        return result
+
+    @staticmethod
+    def show_all():
+        """Show all attributes of all players."""
         i = 0
         serialized_players = players_table.all()
         for player in serialized_players:
             j = 0
-            keys = ("Prénom", "Nom de famille", "Date de naissance",
-                    "Genre", "Classement")
+            keys = (
+                "Prénom",
+                "Nom de famille",
+                "Date de naissance",
+                "Genre",
+                "Classement",
+            )
             attributes = list(player.values())
             print(f"\n{i+1}. {attributes[0].upper()} {attributes[1].upper()}")
             i += 1
@@ -70,80 +148,95 @@ class Player:
                 print(f"{keys[j]} : {attributes[j]}")
                 j += 1
 
-    def show_all_abridged(self):
-        i = 0
-        serialized_players = players_table.all()
-        for player in serialized_players:
-            attributes = list(player.values())
-            print(f"\n{i+1}. {attributes[0].upper()} {attributes[1].upper()}")
-            i += 1
+    @staticmethod
+    def alphabetical_list(unsorted):
+        sorted_list = sorted(unsorted, key=lambda value: value["last_name"])
+        return sorted_list
 
-    def alphabetical_list():
-        players = players_table.all()
-        players = sorted(players, key=lambda value: value["last_name"])
-        return players
-
+    @staticmethod
     def rank_list():
         players = players_table.all()
         players = sorted(players, key=lambda value: value["rank"])
         return players
 
+    @staticmethod
     def final_ranking_list(tournament):
         participants = tournament.players
         players = sorted(players, key=lambda Player: Player.score)
         return players
 
-    def instantiate_participants(list):
-        new_list = []
-        for participant in list:
-            attributes = list(round.values())
-            result = Player(attributes[0], attributes[1], attributes[2],
-                    attributes[3], attributes[4], attributes[5], attributes[6])
-            new_list += result
-        return new_list
-
-    def update_participant(self, first_name, last_name):
-        Participant = Query()
-        players_table.update({"rank": f"{self.rank}"},
-                (Participant["first_name"] == first_name) &
-                (Participant["last_name"] == last_name))
-        players_table.update({"score": f"{self.score}"},
-                (Participant["first_name"] == first_name) &
-                (Participant["last_name"] == last_name))
-
-
 class Match:
-    def __init__(self, players=([], [])):
-        self.players = players
+    def __init__(self, match=([], [])):
+        self.match = match
 
     def set_result(self, winner):
-        # 1 and 2 grant 1 points to the winner. 3 means a tie.
+        """1 and 2 grant 1 points to the winner. 3 means a tie."""
         if winner == 1:
-            self.players[0][0].score += 1
-            self.players[0][1] += 1
+            self.match[0][0].score += 1
+            self.match[0][0].rank += 1
+            self.match[0][1] += 1
         elif winner == 2:
-            self.players[1][0].score += 1
-            self.players[1][1] += 1
+            self.match[1][0].score += 1
+            self.match[1][0].rank += 1
+            self.match[1][1] += 1
         else:
-            self.players[0][0].score += 0.5
-            self.players[1][0].score += 0.5
-            self.players[0][1] += 0.5
-            self.players[1][1] += 0.5
+            self.match[0][0].score += 0.5
+            self.match[0][0].rank += 0.5
+            self.match[0][1] += 0.5
+            self.match[1][0].score += 0.5
+            self.match[1][0].rank += 0.5
+            self.match[1][1] += 0.5
 
+        return self.match
+
+    def serialize_match(self):
+        self.match[0][0] = self.match[0][0].serialize_player()
+        self.match[1][0] = self.match[1][0].serialize_player()
+        return self.match
+
+    @staticmethod
+    def instantiate_match(match):
+        match[0][0] = Player.instantiate_player(match[0][0])
+        match[1][0] = Player.instantiate_player(match[1][0])
+        return match
 
 class Round:
-    def __init__(self, name, id, start=None, end=None, matches=[]):
+    def __init__(self, name, start=None, end=None, matches=[]):
         self.name = name
         self.start = start
         self.end = end
         self.matches = matches
 
+    @staticmethod
+    def instantiate_rounds(list_rounds):
+        list_instances = []
+
+        for dictionary in list_rounds:
+            attributes = list(dictionary.values())
+            for match in attributes[3]:
+                match = Match.instantiate_match(match)
+            result = Round(attributes[0], attributes[1], attributes[2], attributes[3])
+            list_instances.append(result)
+        return list_instances
+
+    @staticmethod
+    def sort_players(list_players):
+        list_players = list(reversed(
+            sorted(list_players, key=lambda Player: (Player.score, Player.rank))
+        ))
+        return list_players
+
+    @staticmethod
     def time_now():
-        time = datetime.datetime.now()
-        time = time.strftime("%d/%m/%Y à %H:%M")
-        return time
+        beginning = datetime.datetime.now()
+        beginning = beginning.strftime("%d/%m/%Y à %H:%M")
+        return beginning
 
     def serialize_round(self):
+        for match in self.matches:
+            match_to_serialize = Match(match)
+            match = match_to_serialize.serialize_match()
+
         serialized_round = {
             "Name": self.name,
             "Start": self.start,
@@ -152,28 +245,6 @@ class Round:
         }
         return serialized_round
 
-    def instantiate_round(list):
-        new_list = []
-        for round in list:
-            attributes = list(round.values())
-            result = Round(attributes[0], attributes[1], attributes[2],
-                    attributes[3])
-            new_list += result
-        return new_list
-
-    def classify_list(self, list_players):
-        list_players = sorted(list_players, key=lambda Player: Player.score)
-        for player in list_players:
-            for other_player in list_players:
-                if (
-                    player.score == other_player.score
-                    and player.rank < other_player.rank
-                ):
-                    current_index = list_players.index(player)
-                    new_index = list_players.index(other_player)
-                    list_players.insert(new_index, player)
-                    list_players.pop(current_index)
-        return list_players
 
 class Tournament:
     def __init__(
@@ -198,8 +269,105 @@ class Tournament:
         self.rounds = rounds
         self.players = players
 
+    @staticmethod
+    def instantiate_tournament(tournament_dict):
+        attributes = list(tournament_dict.values())
+        rounds_list = Round.instantiate_rounds(attributes[7])
+        participants_list = []
+        for participant in attributes[8]:
+            new_participant = Player.instantiate_player(participant)
+            participants_list.append(new_participant)
+        result = Tournament(
+            attributes[0],
+            attributes[1],
+            attributes[2],
+            attributes[3],
+            attributes[4],
+            attributes[5],
+            attributes[6],
+            rounds_list,
+            participants_list,
+        )
+        return result
+
+    @staticmethod
+    def return_last_tournament():
+        list_tournaments = tournament_table.all()
+        i = len(list_tournaments)
+        last_tournament = Tournament.instantiate_tournament(
+            list_tournaments[int(i) - 1]
+        )
+        return last_tournament
+
     def add_player(self, Player):
         self.players.append(Player)
+
+    def round_start(self):
+        nb_round = len(self.rounds) + 1
+        past_matches = []
+        higher_tier = []
+        lower_tier = self.players.copy()
+        i = 0
+
+        new_round = Round(f"Tour {nb_round}", start=Round.time_now())
+        self.rounds.append(new_round)
+        lower_tier = new_round.sort_players(lower_tier)
+
+        while len(higher_tier) < len(lower_tier):
+            higher_tier.append(lower_tier[0])
+            lower_tier.pop(0)
+
+        while i + 1 <= len(higher_tier):
+            match = (
+                [higher_tier[i], higher_tier[i].score],
+                [lower_tier[i], lower_tier[i].score],
+            )
+            new_round.matches.append(match)
+            i += 1
+
+    def round_end(self, results):
+        current_round = self.rounds[-1]
+        list_rounds = []
+        list_participants = []
+        Tournament = Query()
+        i = 0
+
+        current_round.end = f"{Round.time_now()}"
+
+        for match in current_round.matches:
+            match_instance = Match(match)
+            outcome = match_instance.set_result(int(results[i]))
+            match = outcome
+            i += 1
+
+        for player in self.players:
+            player.update_participant()
+        self.round_update()
+        for match in current_round.matches:
+            match = Match.instantiate_match(match)
+
+    def round_update(self):
+        Tournament = Query()
+        rounds_to_serialize = self.rounds.copy()
+        rounds_serialized = []
+        players_to_serialize = self.players.copy()
+        players_serialized = []
+
+        for round_instance in rounds_to_serialize:
+            round_instance = round_instance.serialize_round()
+            rounds_serialized.append(round_instance)
+
+        for player in players_to_serialize:
+            player = player.serialize_player()
+            players_serialized.append(player)
+
+        tournament_table.update(
+            {"Rounds": rounds_serialized}, (Tournament["Date"] == self.date)
+        )
+        tournament_table.update(
+            {"Participants": players_serialized}, (Tournament["Date"] == self.date)
+        )
+
 
     def serialize_tournament(self):
         list_rounds = []
@@ -220,100 +388,6 @@ class Tournament:
             "Description": self.description,
             "Nombre de rounds": self.nb_rounds,
             "Rounds": list_rounds,
-            "Participants": list_participants
+            "Participants": list_participants,
         }
         tournament_table.insert(serialized_tournament)
-
-    def instantiate_tournament(self, tournament_dict):
-        attributes = list(tournament_dict.values())
-        rounds_list = []
-        participants_list = []
-        for round in attributes[7]:
-            new_round = Round.instantiate_round(round)
-            rounds_list.append(new_round)
-        for participant in attributes[8]:
-            new_participant = Player.instantiate_player(participant)
-            participants_list.append(new_participant)
-
-        result = Tournament(
-            attributes[0],
-            attributes[1],
-            attributes[2],
-            attributes[3],
-            attributes[4],
-            attributes[5],
-            attributes[6],
-            rounds_list,
-            participants_list,
-        )
-        return result
-
-    def return_last_tournament(self):
-        list_tournaments = tournament_table.all()
-        i = len(list_tournaments)
-        tournament = self.instantiate_tournament(list_tournaments[int(i)-1])
-        return tournament
-
-    def serialize_tournament_rounds(self):
-        Tournament = Query()
-        date = self.date
-        tournament_table.update({"date": f"{self.date}"},
-                                Tournament["rounds"] == self.rounds)
-
-
-    def new_round(self):
-        nb_round = len(self.rounds) + 1
-        past_matches = []
-        higher_tier = []
-        lower_tier = self.players.copy()
-        i = 0
-        j = 0
-
-        for round_instance in self.rounds:
-            past_matches += round_instance.matches
-
-        round = Round(f"Round {nb_round}", f"{self.date}",
-                    start=Round.time_now())
-        self.rounds.append(round)
-        lower_tier = round.classify_list(lower_tier)
-
-        while len(higher_tier) < len(lower_tier):
-            higher_tier.append(lower_tier[0])
-            lower_tier.pop(0)
-
-        while i + 1 <= len(higher_tier):
-            match = (
-                [higher_tier[i], higher_tier[i].score],
-                [lower_tier[i], lower_tier[i].score],
-            )
-            for old_match in past_matches:
-                if match[0][0] in old_match and match[0][1] in old_match:
-                    match = (
-                        [higher_tier[i], higher_tier[i].score],
-                        [lower_tier[i + 1], lower_tier[i + 1].score],
-                    )
-            round.matches.append(match)
-            i += 1
-        self.serialize_tournament_rounds()
-
-    def finish_round(self):
-        list_rounds = []
-        list_participants = []
-        i = 0
-        Tournament = Query()
-        for round in self.rounds:
-            if i == len(self.rounds)- 1:
-                round.end = f"{Round.time_now()}"
-                for match in round.matches:
-                    match[0][0] = match[0][0].serialize_player()
-                    match[1][0] = match[1][0].serialize_player()
-            result = round.serialize_round()
-            list_rounds.append(result)
-            i += 1
-            print(result)
-        tournament_table.update({"date": f"{self.date}"},
-                                Tournament["rounds"] == list_rounds)
-        for round in self.rounds:
-            for match in round.matches:
-                match[0][0] = Player.instantiate_player(match[0][0])
-                match[1][0] = Player.instantiate_player(match[1][0])

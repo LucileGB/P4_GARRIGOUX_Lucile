@@ -1,21 +1,30 @@
 class Texts:
     welcome_text = """Bienvenue !
 Veuillez taper la lettre correspondant à l'une des options suivantes :
--  N pour créer un nouveau tournoi ;
--  C pour continuer un tournoi en cours ;
--  R pour consulter les rapports (classements de joueurs, tournois passés...) ;
--  Q pour quitter.
+N. Créer un nouveau tournoi ;
+C. Continuer un tournoi en cours ;
+R. Consulter les rapports (classements de joueurs, tournois passés...) ;
+U. Changer directement les classements des joueurs
+Q. Quitter.
 """
     menu_tournament = """CREATION DE TOURNOI\n
 Vous pouvez quitter à tout moment en tapant Q.
+Vous pouvez revenir à l'écran d'accueil en tapant R.
+
 Pour créer un tournoi, veuillez taper les informations suivantes :\n"""
     menu_players = """Bienvenue dans le menu d'ajout de joueurs.
 Vous pouvez quitter à tout moment en tapant Q.
+
 1. Sélectionner des joueurs existants
 2. Créer un nouveau joueur.\n"""
+    menu_change_ranks = """
+Sélectionnez un joueur en tapant le numéro associé, puis tapez son nouveau rang.
+Vous pouvez retourner sur l'écran d'accueil en tapant R.
+Vous pouvez quitter à tout moment en tapant Q.\n"""
     menu_create_player = """CREATION DE JOUEUR\n
 Vous pouvez quitter à tout moment en tapant Q.
 Pour retourner au menu Joueurs, tapez R.
+
 Pour créer un joueurs, veuillez taper les informations suivantes :\n"""
     player_new_date = """Date invalide. Format : jour/mois/année.
 Merci d'entrer une date conforme.\n"""
@@ -41,19 +50,31 @@ Veuillez entrer le chiffre correspondant à la sélection souhaitée.
 1. Liste de tous les joueurs
 2. Liste de tous les tournois
 3. Retour à l'écran principal\n"""
-    rankings_players = """RAPPORTS : JOUEURS
+    rankings_players = """RAPPORTS : JOUEURS\n
 Veuillez entrer le chiffre correspondant à la sélection souhaitée.
 1. Liste par ordre alphabétique
 2. Liste par classement
-3. Retour à l'écran Rapport\n"""
-    rankings_tournaments = """RAPPORTS : TOURNOIS
-Veuillez entrer le chiffre correspondant au tournoi souhaité.
-Tapez r pour revenir à l'écran Rapport.\n"""
-    ranking_tournament = """Veuillez entrer le chiffre correspondant au tournoi souhaité.
+3. Retour à l'écran précédent
+Q. Quitter\n"""
+    rankings_players_alpha = """\nVeuillez entrer le chiffre correspondant à la sélection souhaitée.
+1. Liste par classement
+2. Retour à l'écran précédent
+Q. Quitter\n"""
+    rankings_players_rank = """\nVeuillez entrer le chiffre correspondant à la sélection souhaitée.
+1. Liste par ordre alphabétique
+2. Retour à l'écran précédent
+Q. Quitter\n"""
+    rankings_tournaments = """\nVeuillez entrer le chiffre correspondant au tournoi souhaité pour lister ses joueurs et rounds.
+Tapez R pour revenir à l'écran Rapport.
+Tapez Q pour quitter.\n"""
+    ranking_tournament = """\nVeuillez entrer le chiffre correspondant à l'option souhaitée.
 1. Liste des joueurs par ordre alphabétique
 2. Liste des joueurs par classement
-3. Liste des tours du tournoi
-4. Liste des matchs du tournoi
-5. Retour à l'écran rapport\n"""
+3. Liste des tours et matches du tournoi
+4. Retour à l'écran rapport
+Q. Quitter\n"""
+    ranking_rounds = """\nVeuillez taper le caractère correspondant à l'option souhaitée.
+1. Retour à l'écran rapport
+Q. Quitter\n"""
     matches_instructions = """Entrer les résultats :
 1 si le joueur 1 a gagné, 2 si le joueur 2 a gagné, 3 pour un match nul.\n"""

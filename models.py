@@ -70,6 +70,20 @@ class Player:
             )
 
     @staticmethod
+    def all():
+        serialized_players = players_table.all()
+        return serialized_players
+
+    @staticmethod
+    def change_rank(first_name, last_name, birth_date, new_value):
+        Participant = Query()
+        players_table.update(
+            {"rank": new_value},
+            (Participant["first_name"] == first_name)
+            & (Participant["last_name"] == last_name)
+            & (Participant["birth_date"] == birth_date),
+        )
+    @staticmethod
     def clear_participants():
         players_table.update({"is_playing": "False"})
         players_table.update({"score": 0})
@@ -128,10 +142,9 @@ class Player:
         return result
 
     @staticmethod
-    def show_all():
+    def show_all(serialized_player):
         """Show all attributes of all players."""
         i = 0
-        serialized_players = players_table.all()
         for player in serialized_players:
             j = 0
             keys = (
@@ -156,13 +169,15 @@ class Player:
     @staticmethod
     def rank_list():
         players = players_table.all()
-        players = sorted(players, key=lambda value: value["rank"])
+        players = sorted(players, key=lambda value: value["rank"],
+                        reverse = True)
         return players
 
     @staticmethod
     def final_ranking_list(tournament):
         participants = tournament.players
-        players = sorted(players, key=lambda Player: Player.score)
+        players = sorted(players, key=lambda Player: Player.score,
+                        reverse = True)
         return players
 
 class Match:
@@ -270,6 +285,11 @@ class Tournament:
         self.players = players
 
     @staticmethod
+    def all_tournaments():
+        list_tournament = tournament_table.all()
+        return list_tournament
+
+    @staticmethod
     def instantiate_tournament(tournament_dict):
         attributes = list(tournament_dict.values())
         rounds_list = Round.instantiate_rounds(attributes[7])
@@ -305,25 +325,44 @@ class Tournament:
     def round_start(self):
         nb_round = len(self.rounds) + 1
         past_matches = []
-        higher_tier = []
-        lower_tier = self.players.copy()
-        i = 0
 
-        new_round = Round(f"Tour {nb_round}", start=Round.time_now())
-        self.rounds.append(new_round)
-        lower_tier = new_round.sort_players(lower_tier)
+        if len(self.rounds) == 0:
+            higher_tier = []
+            lower_tier = self.players.copy()
+            i = 0
 
-        while len(higher_tier) < len(lower_tier):
-            higher_tier.append(lower_tier[0])
-            lower_tier.pop(0)
+            new_round = Round(f"Tour {nb_round}", start=Round.time_now())
+            self.rounds.append(new_round)
+            lower_tier = new_round.sort_players(lower_tier)
 
-        while i + 1 <= len(higher_tier):
-            match = (
-                [higher_tier[i], higher_tier[i].score],
-                [lower_tier[i], lower_tier[i].score],
-            )
-            new_round.matches.append(match)
-            i += 1
+            while len(higher_tier) < len(lower_tier):
+                higher_tier.append(lower_tier[0])
+                lower_tier.pop(0)
+
+            while i + 1 <= len(higher_tier):
+                match = (
+                    [higher_tier[i], higher_tier[i].score],
+                    [lower_tier[i], lower_tier[i].score],
+                )
+                new_round.matches.append(match)
+                i += 1
+
+        else:
+            to_sort = self.players.copy()
+            sorted = Round.sort_players(to_sort)
+            i = 0
+
+            new_round = Round(f"Tour {nb_round}", start=Round.time_now())
+            list_matches = []
+
+            for i in range(0, 7, 2):
+                match = (
+                    [sorted[i], sorted[i].score],
+                    [sorted[i+1], sorted[i+1].score]
+                )
+
+                self.rounds.append(new_round)
+                new_round.matches.append(match)
 
     def round_end(self, results):
         current_round = self.rounds[-1]
@@ -343,6 +382,7 @@ class Tournament:
         for player in self.players:
             player.update_participant()
         self.round_update()
+
         for match in current_round.matches:
             match = Match.instantiate_match(match)
 
@@ -354,11 +394,13 @@ class Tournament:
         players_serialized = []
 
         for round_instance in rounds_to_serialize:
+            for match in round_instance.matches:
+                print(match)
             round_instance = round_instance.serialize_round()
             rounds_serialized.append(round_instance)
 
         for player in players_to_serialize:
-            player = player.serialize_player()
+            player = Player.serialize_player(player)
             players_serialized.append(player)
 
         tournament_table.update(

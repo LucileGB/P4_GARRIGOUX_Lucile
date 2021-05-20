@@ -182,7 +182,7 @@ class PlayerMenu(Menu):
 
 class Rankings(Menu):
     @staticmethod
-    def main_rankings():
+    def main():
         right_answers = ["1", "2", "r", "q"]
         answer = ""
         while Menu.input_ok(right_answers, answer) == False:

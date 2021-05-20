@@ -100,7 +100,7 @@ class PlayerControl:
         list_all = models.Player.list_abridged(models.Player.all())
         while is_on == True:
             print("CHANGER LE CLASSEMENT D'UN JOUEUR\n")
-            selection = views.PlayerMenu.change_players_ranks(list_all)
+            selection = views.PlayerMenu.change_ranks(list_all)
             if selection == "q":
                 sys.exit()
             elif selection == "r":
@@ -180,7 +180,7 @@ class MainControl:
         self.player_control = PlayerControl()
 
     def main():
-        result = views.MainMenu.main_menu().lower()
+        result = views.MainMenu.main().lower()
         if result == "n":
             MainControl.create_tournament()
 
@@ -209,13 +209,13 @@ class MainControl:
         while len(models.Player.list_participants()) < NB_PLAYERS:
             PlayerControl.main()
         for player_dict in models.Player.list_participants():
-            player = models.Player.instantiate_player(player_dict)
+            player = models.Player.instantiate(player_dict)
             tournament_instance.players.append(player)
-        tournament_instance.serialize_tournament()
+        tournament_instance.save()
         TournamentControl.launch_tournament()
 
     def main_rankings():
-        choice = views.Rankings.main_rankings()
+        choice = views.Rankings.main()
         if choice == "1":
             MainControl.player_rankings()
         elif choice == "2":
@@ -251,7 +251,7 @@ class MainControl:
         list_ranked = models.Player.rank_list()
         choice = views.Rankings.ranking_players_rank(list_ranked)
         if choice == "1":
-            MainControl.player_rankings_alpha()
+            MainControl.player_rankings_alpha(list_ranked)
         elif choice == "2":
             MainControl.main_rankings()
         elif choice == "q":

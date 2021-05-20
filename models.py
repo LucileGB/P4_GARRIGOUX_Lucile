@@ -40,8 +40,8 @@ class Player:
         else:
             return True
 
-    def serialize_player(self):
-        serialized_player = {
+    def save(self):
+        return {
             "first_name": self.first_name,
             "last_name": self.last_name,
             "birth_date": self.birth_date,
@@ -50,10 +50,9 @@ class Player:
             "score": self.score,
             "is_playing": self.is_playing,
         }
-        return serialized_player
 
     def table_insert_player(self):
-        player = self.serialize_player()
+        player = self.save()
         players_table.insert(player)
 
     def update_participant(self):
@@ -89,7 +88,7 @@ class Player:
         players_table.update({"score": 0})
 
     @staticmethod
-    def instantiate_player(player_dict):
+    def instantiate(player_dict):
         attributes = list(player_dict.values())
         result = Player(
             attributes[0],
@@ -160,15 +159,13 @@ class Player:
 
     @staticmethod
     def alphabetical_list(unsorted):
-        sorted_list = sorted(unsorted, key=lambda value: value["last_name"])
-        return sorted_list
+        return sorted(unsorted, key=lambda value: value["last_name"])
 
     @staticmethod
     def rank_list():
         players = players_table.all()
-        players = sorted(players, key=lambda value: value["rank"],
+        return sorted(players, key=lambda value: value["rank"],
                         reverse = True)
-        return players
 
     @staticmethod
     def final_ranking_list(tournament):
@@ -202,14 +199,14 @@ class Match:
         return self.match
 
     def serialize_match(self):
-        self.match[0][0] = self.match[0][0].serialize_player()
-        self.match[1][0] = self.match[1][0].serialize_player()
+        self.match[0][0] = self.match[0][0].save()
+        self.match[1][0] = self.match[1][0].save()
         return self.match
 
     @staticmethod
     def instantiate_match(match):
-        match[0][0] = Player.instantiate_player(match[0][0])
-        match[1][0] = Player.instantiate_player(match[1][0])
+        match[0][0] = Player.instantiate(match[0][0])
+        match[1][0] = Player.instantiate(match[1][0])
         return match
 
     @staticmethod
@@ -252,7 +249,7 @@ class Round:
         self.matches = matches
 
     @staticmethod
-    def instantiate_rounds(list_rounds):
+    def instantiate(list_rounds):
         list_instances = []
 
         for dictionary in list_rounds:
@@ -324,10 +321,10 @@ class Tournament:
     def instantiate_tournament(tournament_dict):
         attributes = list(tournament_dict.values())
         participants_list = []
-        rounds_list = Round.instantiate_rounds(attributes[7])
+        rounds_list = Round.instantiate(attributes[7])
 
         for participant in attributes[8]:
-            new_participant = Player.instantiate_player(participant)
+            new_participant = Player.instantiate(participant)
             participants_list.append(new_participant)
         result = Tournament(
             attributes[0],
@@ -445,7 +442,7 @@ class Tournament:
             i += 1
 
         for player in players_to_serialize:
-            player = Player.serialize_player(player)
+            player = Player.save(player)
             players_serialized.append(player)
 
         tournament_table.update(
@@ -456,14 +453,14 @@ class Tournament:
         )
 
 
-    def serialize_tournament(self):
+    def save(self):
         list_rounds = []
         list_participants = []
         for round in self.rounds:
             result = round.serialize_round()
             list_rounds.append(result)
         for participant in self.players:
-            result = participant.serialize_player()
+            result = participant.save()
             list_participants.append(result)
 
         serialized_tournament = {

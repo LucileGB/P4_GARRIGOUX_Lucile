@@ -8,6 +8,7 @@ import views
 NB_PLAYERS = 8
 NB_ROUNDS = 4
 
+
 class TournamentControl:
     def __init__(self):
         self.tournament_menu = views.TournamentMenu()
@@ -15,33 +16,37 @@ class TournamentControl:
 
     def create_tournament():
         models.Player.clear_participants()
-        attributes = views.TournamentMenu.create_tournament()
+        form = views.TournamentMenu.create_tournament()
         # ADD VERIFICATION
-        if attributes == "q":
-            sys.exit
-        elif attributes == "r":
+        if form == "q":
+            sys.exit()
+        elif form == "r":
             MainControl.main()
         else:
-            right_date = helper.CheckForm.check_date(attributes[2])
-            if helper.CheckForm.check_date(attributes[2]) == False:
+            right_date = helper.CheckForm.check_date(form[2])
+            if helper.CheckForm.check_date(form[2]) == False:
                 print("Erreur sur la date du tournoi.")
-                new_date = helper.CheckForm.correct_date(attributes[2])
-                attributes[2] = new_date
-            if helper.CheckForm.check_number(attributes[3]) == False:
+                new_date = helper.CheckForm.correct_date(form[2])
+                form[2] = new_date
+            if helper.CheckForm.check_number(form[3]) == False:
                 print("Merci d'entrer un chiffre pour la durée du tournoi.")
-                attributes[3] == helper.CheckForm.check_number(attributes[3])
-            attributes[4] = helper.CheckForm.control_time(attributes[4])
-            instance_tournament = models.Tournament(
-                attributes[0],
-                attributes[1],
-                attributes[2],
-                attributes[3],
-                attributes[4],
-                attributes[5],
-            )
+                form[3] == helper.CheckForm.check_number(form[3])
+            form[4] = helper.CheckForm.control_time(form[4])
+            dict_tournament = {
+                "name": form[0],
+                "place": form[1],
+                "date": form[2],
+                "duration": form[3],
+                "time_control": form[4],
+                "description": form[5],
+                "nb_rounds": NB_ROUNDS,
+                "rounds": [],
+                "players": [],
+                "ended": "no",
+            }
 
             print("Le tournoi a été créé avec succès.\n")
-            return instance_tournament
+            return models.Tournament(dict_tournament)
 
     @staticmethod
     def launch_tournament():
@@ -114,32 +119,36 @@ class PlayerControl:
                 player.change_rank(int(selection[1]))
 
     def create_player():
-        attributes = views.PlayerMenu.create_player()
-        if attributes == "r":
+        form = views.PlayerMenu.create_player()
+        if form == "r":
             views.PlayerMenu.main()
-        elif attributes == "q":
+        elif form == "q":
             sys.exit
         else:
-            right_date = helper.CheckForm.check_date(attributes[2])
-            if helper.CheckForm.check_date(attributes[2]) == False:
+            right_date = helper.CheckForm.check_date(form[2])
+            if helper.CheckForm.check_date(form[2]) == False:
                 print("Champs date de naissance :")
-                new_date = helper.CheckForm.correct_date(attributes[2])
-                attributes[2] = new_date
-            if helper.CheckForm.check_gender(attributes[3]) == False:
+                new_date = helper.CheckForm.correct_date(form[2])
+                form[2] = new_date
+            if helper.CheckForm.check_gender(form[3]) == False:
                 print("Champs genre :")
-                attributes[3] = helper.CheckForm.check_gender(attributes[3])
-            if helper.CheckForm.check_number(attributes[4]) == False:
+                form[3] = helper.CheckForm.check_gender(form[3])
+            if helper.CheckForm.check_number(form[4]) == False:
                 print("Champs classement :")
-                attributes[4] = helper.CheckForm.check_number(attributes[4])
+                form[4] = helper.CheckForm.check_number(form[4])
 
-            new_player = models.Player({"first_name": attributes[0],
-                                        "last_name": attributes[1],
-                                        "birth_date": attributes[2],
-                                        "gender": attributes[3],
-                                        "rank": attributes[4],
-                                        "score": 0,
-                                        "is_playing": "False"})
-                                        
+            new_player = models.Player(
+                {
+                    "first_name": form[0],
+                    "last_name": form[1],
+                    "birth_date": form[2],
+                    "gender": form[3],
+                    "rank": form[4],
+                    "score": 0,
+                    "is_playing": "False",
+                }
+            )
+
             if new_player.has_double() == True:
                 print("Ce joueur existe déjà.\n")
                 views.PlayerMenu.main()
@@ -154,7 +163,8 @@ class PlayerControl:
             list_not_participant = models.Player.list_not_participants()
             selection = views.PlayerMenu.select_players(
                 models.Player.list_abridged(list_not_participant),
-                models.Player.list_participants())
+                models.Player.list_participants(),
+            )
             if selection == "q":
                 sys.exit()
             elif selection == "r":
@@ -220,7 +230,7 @@ class MainControl:
         elif choice == "r":
             MainControl.main()
         elif choice == "q":
-            sys.exit
+            sys.exit()
 
     def player_rankings():
         list_all = models.Player.all()
@@ -242,7 +252,7 @@ class MainControl:
         elif choice == "2":
             MainControl.main_rankings()
         elif choice == "q":
-            sys.exit
+            sys.exit()
 
     def player_rankings_rank():
         list_ranked = models.Player.rank_list()
@@ -252,7 +262,7 @@ class MainControl:
         elif choice == "2":
             MainControl.main_rankings()
         elif choice == "q":
-            sys.exit
+            sys.exit()
 
     def tournaments_rankings():
         list_tournament = models.Tournament.all_tournaments()
@@ -260,7 +270,7 @@ class MainControl:
         if choice == "r":
             MainControl.main_rankings()
         elif choice == "q":
-            sys.exit
+            sys.exit()
         else:
             MainControl.tournament_rankings(list_tournament[choice - 1])
 
@@ -275,7 +285,7 @@ class MainControl:
         elif choice == "4":
             MainControl.tournaments_rankings()
         elif choice == "q":
-            sys.exit
+            sys.exit()
 
     def participants_alpha(tournament):
         choice = views.Rankings.ranking_players_alpha(tournament["Participants"])
@@ -284,7 +294,7 @@ class MainControl:
         elif choice == "2":
             MainControl.tournament_rankings(tournament)
         else:
-            sys.exit
+            sys.exit()
 
     def participants_by_rank(tournament):
         choice = views.Rankings.ranking_players_rank(tournament["Participants"])
@@ -293,11 +303,11 @@ class MainControl:
         elif choice == "2":
             MainControl.tournament_rankings(tournament)
         else:
-            sys.exit
+            sys.exit()
 
     def rounds_rankings(tournament):
         choice = views.Rankings.ranking_rounds(tournament)
         if choice == "1":
             MainControl.tournament_rankings(tournament)
         elif choice == "q":
-            sys.exit
+            sys.exit()

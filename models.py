@@ -92,8 +92,7 @@ class Player:
 
     @staticmethod
     def instantiate(player_dict):
-        result = Player(player_dict)
-        return result
+        return Player(player_dict)
 
     @staticmethod
     def list_abridged(list_to_abridge):
@@ -182,9 +181,9 @@ class Match:
 
     @staticmethod
     def match_sorting(new_matches, past_matches):
-        """Use Match.compare to check whether two players have already
+        """Uses Match.compare to check whether two players have already
         played together. If so, player1 plays with player3, etc.
-        If it's the last match, the algorythm change to ensure no repetition."""
+        If it's the last match, the algorythm changes to ensure no repetition."""
         i = 0
         for new_match in new_matches:
             for past_match in past_matches:
@@ -237,7 +236,7 @@ class Round:
         beginning = beginning.strftime("%d/%m/%Y à %H:%M")
         return beginning
 
-    def serialize_round(self):
+    def serialize(self):
         for match in self.matches:
             match_to_serialize = Match(match)
             match = match_to_serialize.serialize_match()
@@ -252,29 +251,17 @@ class Round:
 
 
 class Tournament:
-    def __init__(
-        self,
-        name=None,
-        place=None,
-        date=None,
-        duration=None,
-        time_control=None,
-        description=None,
-        nb_rounds=NB_ROUNDS,
-        rounds=[],
-        players=[],
-        ended=None
-    ):
-        self.name = name
-        self.place = place
-        self.date = date
-        self.duration = duration
-        self.time_control = time_control
-        self.description = description
-        self.nb_rounds = nb_rounds
-        self.rounds = rounds
-        self.players = players
-        self.ended = None
+    def __init__(self, params):
+        self.name = params["name"]
+        self.place = params["place"]
+        self.date = params["date"]
+        self.duration = params["duration"]
+        self.time_control = params["time_control"]
+        self.description = params["description"]
+        self.nb_rounds = params["nb_rounds"]
+        self.rounds = params["rounds"]
+        self.players = params["players"]
+        self.ended = params["ended"]
 
     @staticmethod
     def all_tournaments():
@@ -282,32 +269,20 @@ class Tournament:
         return list_tournament
 
     @staticmethod
-    def instantiate_tournament(tournament_dict):
-        attributes = list(tournament_dict.values())
+    def instantiate(tournament_dict):
+        tournament_dict["rounds"] = Round.instantiate(tournament_dict["rounds"])
         participants_list = []
-        rounds_list = Round.instantiate(attributes[7])
-
-        for participant in attributes[8]:
+        for participant in tournament_dict["players"]:
             new_participant = Player.instantiate(participant)
             participants_list.append(new_participant)
-        result = Tournament(
-            attributes[0],
-            attributes[1],
-            attributes[2],
-            attributes[3],
-            attributes[4],
-            attributes[5],
-            attributes[6],
-            rounds_list,
-            participants_list,
-            attributes[9]
-        )
-        return result
+            tournament_dict["players"] = participants_list
+
+        return Tournament(tournament_dict)
 
     @staticmethod
     def return_last_tournament():
         list_tournaments = tournament_table.all()
-        last_tournament = Tournament.instantiate_tournament(
+        last_tournament = Tournament.instantiate(
             list_tournaments[-1]
         )
         return last_tournament
@@ -401,7 +376,7 @@ class Tournament:
         for round_instance in rounds_to_serialize:
             print(round_instance.matches)
             print(i)
-            round_instance = round_instance.serialize_round()
+            round_instance = round_instance.serialize()
             rounds_serialized.append(round_instance)
             i += 1
 
@@ -410,10 +385,10 @@ class Tournament:
             players_serialized.append(player)
 
         tournament_table.update(
-            {"Rounds": rounds_serialized}, (Tournament["Date"] == self.date)
+            {"Rounds": rounds_serialized}, (Tournament["date"] == self.date)
         )
         tournament_table.update(
-            {"Participants": players_serialized}, (Tournament["Date"] == self.date)
+            {"Participants": players_serialized}, (Tournament["date"] == self.date)
         )
 
 
@@ -421,27 +396,27 @@ class Tournament:
         list_rounds = []
         list_participants = []
         for round in self.rounds:
-            result = round.serialize_round()
+            result = round.serialize()
             list_rounds.append(result)
         for participant in self.players:
             result = participant.save()
             list_participants.append(result)
 
         serialized_tournament = {
-            "Nom": self.name,
-            "Lieu": self.place,
-            "Date": self.date,
-            "Duree": self.duration,
-            "Gestion temps": self.time_control,
-            "Description": self.description,
-            "Nombre de rounds": self.nb_rounds,
-            "Rounds": list_rounds,
-            "Participants": list_participants,
-            "Fini": self.ended
+            "name": self.name,
+            "place": self.place,
+            "date": self.date,
+            "duration": self.duration,
+            "time_control": self.time_control,
+            "description": self.description,
+            "nb_rounds": self.nb_rounds,
+            "rounds": list_rounds,
+            "players": list_participants,
+            "ended": self.ended
         }
         tournament_table.insert(serialized_tournament)
 
     def ended(self):
         tournament_table.update(
-            {"Fini": "True"}, (Tournament["Date"] == self.date)
+            {"Fini": "True"}, (Tournament["date"] == self.date)
         )

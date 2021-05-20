@@ -79,7 +79,7 @@ class Menu:
 
 class MainMenu(Menu):
     @staticmethod
-    def main_menu():
+    def main():
         inputs = ["n", "c", "m", "r", "q"]
         answer = ""
         while Menu.input_ok(inputs, answer) == False:
@@ -155,7 +155,7 @@ class PlayerMenu(Menu):
                     return player
 
     @staticmethod
-    def change_players_ranks(player_list):
+    def change_ranks(player_list):
         has_chosen = False
         while has_chosen == False:
             selected = input(texts.Texts.new_number)
@@ -386,7 +386,7 @@ class TournamentMenu(Menu):
             )
             i += 1
 
-        outcome = TournamentMenu.enter_results_confirm(tournament, current_round)
+        outcome = TournamentMenu.enter_results_confirm(current_round)
         return outcome
 
     @staticmethod

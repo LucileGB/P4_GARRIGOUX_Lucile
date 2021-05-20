@@ -2,6 +2,7 @@ import texts
 
 
 class Menu:
+    @staticmethod
     def change_form(field_list=[]):
         """Take care of swapping one selected article in a list of answers
         with a new input from the user."""
@@ -21,8 +22,11 @@ class Menu:
                     field_list.insert(int(choice) - 1, new_answer)
                     return field_list
 
+    @staticmethod
     def fill_form(prompts=[]):
-        """Submit a list of prompts to the user, then returns the results."""
+        """Submit a list of prompts to the user, then returns the results.
+        If Q or R are submitted, interrupts the process and return them
+        immediately."""
         answers = []
         for prompt in prompts:
             answer = input(prompt)
@@ -36,6 +40,7 @@ class Menu:
             answers.append(answer)
         return answers
 
+    @staticmethod
     def input_new(prompt):
         while True:
             answer = input(prompt)
@@ -45,6 +50,7 @@ class Menu:
             if confirm == True:
                 return answer
 
+    @staticmethod
     def input_ok(right_answers, answer):
         """Check whether a given input is in a given list."""
         if answer in right_answers:
@@ -52,6 +58,7 @@ class Menu:
         else:
             return False
 
+    @staticmethod
     def yes_no():
         answers = ["o", "n"]
         answer = ""
@@ -62,6 +69,7 @@ class Menu:
             if answer == "n" or answer == "non":
                 return False
 
+    @staticmethod
     def print_results(fields, answers):
         i = 0
         for field in fields:
@@ -70,6 +78,7 @@ class Menu:
 
 
 class MainMenu(Menu):
+    @staticmethod
     def main_menu():
         inputs = ["n", "c", "m", "r", "q"]
         answer = ""
@@ -80,7 +89,16 @@ class MainMenu(Menu):
 
 
 class PlayerMenu(Menu):
+    @staticmethod
+    def main():
+        """Return user input for the main player menu."""
+        prompt = input(texts.Texts.menu_players).lower()
+        return prompt
+
+    @staticmethod
     def create_player():
+        """Returns inputs from the player creation forms. If R or Q are typed,
+        interrupts the process and returns them immediately."""
         form_players = [
             "Prénom : ",
             "Nom de famille : ",
@@ -105,35 +123,42 @@ class PlayerMenu(Menu):
             confirm = Menu.yes_no()
         return results
 
-    def main():
-        answers = ["1", "2", "q"]
-        prompt = input(texts.Texts.menu_players).lower()
-        return prompt
-
-    def select_players(player_list):
+    @staticmethod
+    def select_players(player_list, participants_list):
+        """Add players to a tournament's players field. If R or Q are typed,
+        interrupts the process and returns them immediately."""
         print(texts.Texts.select_players)
+        if len(participants_list) > 0:
+            i = 0
+            print(f"PARTICIPANTS :")
+            for player in participants_list:
+                name = f"{player['first_name']} {player['last_name']}"
+                print(f"Joueur {i+1} : {name}")
+                i += 1
         has_chosen = False
         while has_chosen == False:
             selected = input("Chiffre : ")
-            if selected == "q":
+            if selected.lower() == "q":
                 return "q"
-            if selected == "r":
+            elif selected.lower() == "r":
                 return "r"
             elif selected.isnumeric() == False:
                 print("Veuillez taper un chiffre.")
+            elif int(selected) > len(player_list):
+                print("Ce nombre ne correspond à aucun joueur.")
             else:
-                player = player_list[int(selected)]
+                player = player_list[int(selected)-1]
                 name = f"{player['first_name']} {player['last_name']}"
                 print(f"Vous avez sélectionné {name}.")
                 confirm = Menu.yes_no()
                 if confirm == True:
                     return player
 
+    @staticmethod
     def change_players_ranks(player_list):
         has_chosen = False
         while has_chosen == False:
-            print(texts.Texts.menu_change_ranks)
-            selected = input("Chiffre : ")
+            selected = input(texts.Texts.new_number)
             if selected == "q":
                 return "q"
             if selected == "r":
@@ -156,13 +181,15 @@ class PlayerMenu(Menu):
 
 
 class Rankings(Menu):
+    @staticmethod
     def main_rankings():
-        right_answers = ["1", "2", "3", "q"]
+        right_answers = ["1", "2", "r", "q"]
         answer = ""
         while Menu.input_ok(right_answers, answer) == False:
             answer = input(texts.Texts.rankings_main)
         return answer.lower()
 
+    @staticmethod
     def ranking_players():
         right_answers = ["1", "2", "3", "q"]
         answer = ""
@@ -170,7 +197,9 @@ class Rankings(Menu):
             answer = input(texts.Texts.rankings_players).lower()
         return answer
 
+    @staticmethod
     def ranking_players_alpha(list_players):
+        """Shows the player list in alphabetical order."""
         right_answers = ["1", "2", "q"]
         answer = ""
         i = 0
@@ -195,7 +224,9 @@ class Rankings(Menu):
             answer = input(texts.Texts.rankings_players_alpha)
         return answer.lower()
 
+    @staticmethod
     def ranking_players_rank(list_players):
+        """Shows the player list per rankings."""
         right_answers = ["1", "2", "q"]
         answer = ""
         i = 0
@@ -220,7 +251,9 @@ class Rankings(Menu):
             answer = input(texts.Texts.rankings_players_rank)
         return answer.lower()
 
+    @staticmethod
     def ranking_tournaments(list_tournament):
+        """Shows a list of all tournaments."""
         right_answers = ["r", "q"]
         nb_tournaments = len(list_tournament)
         answer = ""
@@ -229,7 +262,7 @@ class Rankings(Menu):
             "Nom : ",
             "Adresse : ",
             "Date : ",
-            "Date de fin : ",
+            "Durée (en jours) : ",
             "Contrôle de temps : ",
             "Notes ou descriptions : ",
         ]
@@ -248,7 +281,10 @@ class Rankings(Menu):
                     return int(answer)
         return answer
 
+    @staticmethod
     def ranking_tournament(tournament):
+        """Tournament menu for rankings. The returned input allow access to
+        the participants list or the list of rounds and matches."""
         right_answers = ["1", "2", "3", "4", "q"]
         answer = ""
         i = 0
@@ -268,7 +304,9 @@ class Rankings(Menu):
             answer = input(texts.Texts.ranking_tournament).lower()
         return answer
 
+    @staticmethod
     def ranking_rounds(tournament):
+        """Shows a list of rounds and matches for the chosen tournament."""
         right_answers = ["1", "q"]
         answer = ""
         attributes = list(tournament.values())
@@ -291,23 +329,29 @@ class Rankings(Menu):
         while Menu.input_ok(right_answers, answer) == False:
             answer = input(texts.Texts.ranking_rounds).lower()
         return answer
-        print(tournament)
 
 
 class TournamentMenu(Menu):
     @staticmethod
     def create_tournament():
+        """Accepts input for the tournament creation form. If R or Q is typed,
+        returns this input immediately."""
         form_tournament = [
             "Nom : ",
             "Adresse : ",
             "Date : ",
-            "Date de fin : ",
-            "Contrôle de temps (bullet, blitz ou coup rapide) : ",
+            "Durée (en jours, en chiffre) : ",
+            "Contrôle de temps :\n1. Bullet\n2. Blitz\n3. Coup rapide\n",
             "Notes ou descriptions : ",
         ]
 
         print(texts.Texts.menu_tournament)
         results = Menu.fill_form(form_tournament)
+        if results == "r":
+            return "r"
+        if results == "q":
+            return "q"
+        print("\n\nNOUVEAU TOURNOI :\n")
         Menu.print_results(form_tournament, results)
 
         answer = Menu.yes_no()
@@ -324,10 +368,11 @@ class TournamentMenu(Menu):
 
     @staticmethod
     def tournament_round(tournament):
+        """Shows the current matches. Uses function
+        TournamentMenu.enter_results_confirm to accepts input as to
+        each match's outcome."""
         nb_round = len(tournament.rounds)
         current_round = tournament.rounds[nb_round - 1]
-        print(f"tournament_round: {current_round.matches}")
-        print(f"tournament_round: {len(current_round.matches)}")
         i = 1
         print(f"Bienvenue dans {tournament.name}.\n")
         print(f"Round actuel : {current_round.name}")
@@ -337,7 +382,7 @@ class TournamentMenu(Menu):
             player_one = f"{match[0][0].first_name} {match[0][0].last_name}"
             player_two = f"{match[1][0].first_name} {match[1][0].last_name}"
             print(
-                f"{i}. {player_one}, {match[0][0].score} contre {player_two}, {match[1][0].score}"
+                f"{i}. {player_one} ({match[0][0].score}) contre {player_two} ({match[1][0].score})"
             )
             i += 1
 
@@ -345,7 +390,52 @@ class TournamentMenu(Menu):
         return outcome
 
     @staticmethod
-    def enter_results(tournament, round):
+    def end_screen(tournament):
+        """Shows the tournament's result, printing the winner on top."""
+        right_answers = ["1", "q"]
+        answer = ""
+        attributes = list(tournament.values())
+        player_rank = 0
+        rankings = list(sorted(attributes[8], key=lambda i: i["score"], reverse=True))
+        print("SCORES FINAUX\n")
+        for player in rankings:
+            player_attributes = list(player.values())
+            if player_rank == 0:
+                print("GAGNANT :")
+                print(f"\n{i+1}. {attributes[0]} {attributes[1].upper()}")
+                print(f"Classement : {attributes[4]} points\n\n")
+            else:
+                print(f"{player_rank+1} place :")
+                player_attributes = list(player.values())
+                print(f"\n{i+1}. {attributes[0]} {attributes[1].upper()}")
+                print(f"Classement : {attributes[4]} points\n")
+        while Menu.input_ok(right_answers, answer) == False:
+            answer = input(texts.Texts.rankings_players_rank)
+        return answer.lower()
+
+        for round in attributes[7]:
+            i = 0
+            rounds_attr = list(round.values())
+            print(f"\n{rounds_attr[0].upper()}")
+            print(f"Début : {rounds_attr[1]}")
+            print(f"Durée : {rounds_attr[2]}")
+            for match in rounds_attr[3]:
+                player_one = f"{match[0][0]['first_name']} {match[0][0]['last_name']}"
+                score_one = f"{match[0][1]}"
+                player_two = f"{match[1][0]['first_name']} {match[1][0]['last_name']}"
+                score_two = f"{match[1][1]}"
+                print(f"MATCH {i+1}")
+                print(
+                    f"{player_one} (score final : {score_one}) et {player_two} (score final : {score_two})"
+                )
+                i += 1
+        while Menu.input_ok(right_answers, answer) == False:
+            answer = input(texts.Texts.ranking_rounds).lower()
+        return answer
+
+    @staticmethod
+    def enter_results(round):
+        """Display matches and accept input for their outcome."""
         proper_input = ["1", "2", "3", "q"]
         results_list = []
         i = 1
@@ -365,9 +455,9 @@ class TournamentMenu(Menu):
         return results_list
 
     @staticmethod
-    def enter_results_confirm(tournament, round):
+    def enter_results_confirm(round):
         while True:
-            results_list = TournamentMenu.enter_results(tournament, round)
+            results_list = TournamentMenu.enter_results(round)
             if results_list == "q":
                 return "q"
             confirm = Menu.yes_no()

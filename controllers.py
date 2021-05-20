@@ -5,9 +5,8 @@ import models
 import texts
 import views
 
-
-current_tournament = None
-
+NB_PLAYERS = 8
+NB_ROUNDS = 4
 
 class TournamentControl:
     def __init__(self):
@@ -23,31 +22,55 @@ class TournamentControl:
         elif attributes == "r":
             MainControl.main()
         else:
+            right_date = helper.CheckForm.check_date(attributes[2])
+            if helper.CheckForm.check_date(attributes[2]) == False:
+                print("Erreur sur la date du tournoi.")
+                new_date = helper.CheckForm.correct_date(attributes[2])
+                attributes[2] = new_date
+            if helper.CheckForm.check_number(attributes[3]) == False:
+                print("Merci d'entrer un chiffre pour la durée du tournoi.")
+                attributes[3] == helper.CheckForm.check_number(attributes[3])
+            attributes[4] = helper.CheckForm.control_time(attributes[4])
             instance_tournament = models.Tournament(
-                attributes[0], attributes[1], attributes[2], attributes[3],
-                attributes[4], attributes[5]
+                attributes[0],
+                attributes[1],
+                attributes[2],
+                attributes[3],
+                attributes[4],
+                attributes[5],
             )
-        return instance_tournament
+
+            print("Le tournoi a été créé avec succès.\n")
+            return instance_tournament
 
     @staticmethod
     def launch_tournament():
         # rename launch_tournament
         i = 0
         current_tournament = models.Tournament.return_last_tournament()
-        while len(current_tournament.rounds) < 4:
+        while len(current_tournament.rounds) < NB_ROUNDS:
             TournamentControl.round_control()
+        current_tournament.ended()
 
         print("Résultats du tournoi :")
+        list_tournament = models.Tournament.all_tournaments()
+        finished_tournament = list_tournament[-1]
+        choice = views.TournamentMenu.end_screen(finished_tournament)
+        if choice == "1":
+            MainControl.main()
+        elif choice == "q":
+            sys.exit()
 
     @staticmethod
     def round_control():
-        tournament = models.Tournament.return_last_tournament()
-        tournament.round_start()
-        outcome = views.TournamentMenu.tournament_round(tournament)
+        tournament_instance = models.Tournament.return_last_tournament()
+        tournament_instance.round_start()
+        outcome = views.TournamentMenu.tournament_round(tournament_instance)
         if outcome == "q":
             sys.exit()
         else:
-            tournament.round_end(outcome)
+            tournament_instance.round_end(outcome)
+
 
 class PlayerControl:
     def __init__(self):
@@ -55,14 +78,19 @@ class PlayerControl:
         self.player_model = models.Player()
 
     def main():
-        chose = False
-        while chose == False:
+        condition = False
+        while condition == False:
             choice = views.PlayerMenu.main()
             if choice == "1":
-                chose = True
-                PlayerControl.select_players()
+                if len(models.Player.list_not_participants()) == 0:
+                    condition = True
+                    print("Aucun joueur disponible : veuillez en créer.\n")
+                    PlayerControl.create_player()
+                else:
+                    condition = True
+                    PlayerControl.select_players()
             elif choice == "2":
-                chose = True
+                condition = True
                 PlayerControl.create_player()
             elif choice == "q":
                 sys.exit()
@@ -83,8 +111,9 @@ class PlayerControl:
                 first_name = selection[0]["first_name"]
                 last_name = selection[0]["last_name"]
                 birth_date = selection[0]["birth_date"]
-                models.Player.change_rank(first_name, last_name,
-                                        birth_date, int(selection[1]))
+                models.Player.change_rank(
+                    first_name, last_name, birth_date, int(selection[1])
+                )
 
     def create_player():
         attributes = views.PlayerMenu.create_player()
@@ -93,12 +122,17 @@ class PlayerControl:
         elif attributes == "q":
             sys.exit
         else:
+            right_date = helper.CheckForm.check_date(attributes[2])
             if helper.CheckForm.check_date(attributes[2]) == False:
-                attributes[2] == views.Menu.input_new(texts.Texts.player_new_date)
+                print("Champs date de naissance :")
+                new_date = helper.CheckForm.correct_date(attributes[2])
+                attributes[2] = new_date
             if helper.CheckForm.check_gender(attributes[3]) == False:
-                attributes[3] == views.Menu.input_new(texts.Texts.player_new_gender)
-            if helper.CheckForm.check_rank(attributes[4]) == False:
-                attributes[3] == views.Menu.input_new(texts.Texts.player_new_rank)
+                print("Champs genre :")
+                attributes[3] = helper.CheckForm.check_gender(attributes[3])
+            if helper.CheckForm.check_number(attributes[4]) == False:
+                print("Champs classement :")
+                attributes[4] = helper.CheckForm.check_number(attributes[4])
 
             new_player = models.Player(
                 attributes[0],
@@ -117,19 +151,17 @@ class PlayerControl:
 
     def select_players():
         is_on = True
-        list_not_participant = models.Player.list_not_participants()
-        while is_on == True and len(models.Player.list_participants()) < 8:
+        while is_on == True and len(models.Player.list_participants()) < NB_PLAYERS:
+            list_not_participant = models.Player.list_not_participants()
             selection = views.PlayerMenu.select_players(
-                models.Player.list_abridged(models.Player.list_not_participants())
-            )
+                models.Player.list_abridged(list_not_participant),
+                models.Player.list_participants())
             if selection == "q":
                 sys.exit()
             elif selection == "r":
                 print("Menu quitté.\n")
                 is_on == False
                 PlayerControl.main()
-            elif selection > len(models.Player.list_participants()):
-                print("Ce nombre ne correspond à aucun joueur.")
             else:
                 first_name = selection["first_name"]
                 last_name = selection["last_name"]
@@ -150,17 +182,19 @@ class MainControl:
     def main():
         result = views.MainMenu.main_menu().lower()
         if result == "n":
-            tournament_instance = TournamentControl.create_tournament()
-            while len(models.Player.list_participants()) < 8:
-                PlayerControl.main()
-            for player_dict in models.Player.list_participants():
-                player = models.Player.instantiate_player(player_dict)
-                tournament_instance.players.append(player)
-            tournament_instance.serialize_tournament()
-            TournamentControl.launch_tournament()
+            MainControl.create_tournament()
 
         elif result == "c":
-            TournamentControl.launch_tournament()
+            if len(models.Tournament.all_tournaments()) == 0:
+                print("Aucun tournoi en cours ! Veuillez créer un tournoi.")
+                MainControl.create_tournament()
+            else:
+                last_tournament = models.Tournament.return_last_tournament()
+                if last_tournament.ended == "True":
+                    print("Aucun tournoi en cours ! Veuillez créer un tournoi.")
+                    MainControl.create_tournament()
+                else:
+                    TournamentControl.launch_tournament()
 
         elif result == "r":
             MainControl.main_rankings()
@@ -170,13 +204,23 @@ class MainControl:
         elif result == "q":
             sys.exit()
 
+    def create_tournament():
+        tournament_instance = TournamentControl.create_tournament()
+        while len(models.Player.list_participants()) < NB_PLAYERS:
+            PlayerControl.main()
+        for player_dict in models.Player.list_participants():
+            player = models.Player.instantiate_player(player_dict)
+            tournament_instance.players.append(player)
+        tournament_instance.serialize_tournament()
+        TournamentControl.launch_tournament()
+
     def main_rankings():
         choice = views.Rankings.main_rankings()
         if choice == "1":
             MainControl.player_rankings()
         elif choice == "2":
             MainControl.tournaments_rankings()
-        elif choice == "3":
+        elif choice == "r":
             MainControl.main()
         elif choice == "q":
             sys.exit
@@ -221,7 +265,7 @@ class MainControl:
         elif choice == "q":
             sys.exit
         else:
-            MainControl.tournament_rankings(list_tournament[choice-1])
+            MainControl.tournament_rankings(list_tournament[choice - 1])
 
     def tournament_rankings(tournament):
         choice = views.Rankings.ranking_tournament(tournament)
@@ -236,19 +280,19 @@ class MainControl:
         elif choice == "q":
             sys.exit
 
-    def participants_by_rank(tournament):
-        choice = views.Rankings.ranking_players_rank(tournament["Participants"])
-        if choice == "1" :
-            MainControl.participants_alpha(tournament)
+    def participants_alpha(tournament):
+        choice = views.Rankings.ranking_players_alpha(tournament["Participants"])
+        if choice == "1":
+            MainControl.participants_by_rank(tournament)
         elif choice == "2":
             MainControl.tournament_rankings(tournament)
         else:
             sys.exit
 
-    def participants_alpha(tournament):
-        choice = views.Rankings.ranking_players_alpha(tournament["Participants"])
-        if choice == "1" :
-            MainControl.participants_by_rank(tournament)
+    def participants_by_rank(tournament):
+        choice = views.Rankings.ranking_players_rank(tournament["Participants"])
+        if choice == "1":
+            MainControl.participants_alpha(tournament)
         elif choice == "2":
             MainControl.tournament_rankings(tournament)
         else:

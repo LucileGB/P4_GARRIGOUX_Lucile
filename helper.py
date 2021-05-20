@@ -1,8 +1,13 @@
 from datetime import date
 from tinydb import TinyDB, Query
 
+import views
+import texts
+
+
 class CheckForm:
     def check_date(input):
+        """Checks if the date is set to the one accepted format."""
         try:
             split_input = input.split("/")
             date_string = f"{split_input[2]}-{split_input[1]}-{split_input[0]}"
@@ -11,14 +16,36 @@ class CheckForm:
             return False
         return date_string
 
-    def check_gender(gender):
-        if gender.lower() in ("homme", "femme"):
-            return gender
-        else:
-            return False
+    def correct_date(input):
+        """Only returns the date once it's correctly inputted."""
+        while CheckForm.check_date(input) == False:
+            new_date = views.Menu.input_new(texts.Texts.wrong_date)
+            new_date = CheckForm.check_date(new_date)
+            if new_date != False:
+                return new_date
 
-    def check_rank(rank):
-        if str(rank).isnumeric():
-            return int(rank)
-        else:
-            return False
+    def check_gender(gender):
+        genders = ("homme", "femme")
+        while gender.lower() not in genders:
+            new_gender = views.Menu.input_new(texts.Texts.new_gender)
+            if new_gender.lower() in genders:
+                return new_gender
+
+    def check_number(number):
+        while str(number).isnumeric() == False:
+            new_number = views.Menu.input_new(texts.Texts.new_number)
+            if str(new_number).isnumeric() == True:
+                return int(new_number)
+
+    def control_time(number):
+        """Once it receives the proper input, returns chosen time control."""
+        right_answers = ["1", "2", "3"]
+        while str(number).isnumeric() == False and str(number) not in right_answers:
+            new_number = views.Menu.input_new(texts.Texts.wrong_time_control)
+            if str(new_number).isnumeric() == True and str(new_number) in right_answers:
+                if new_number == "1":
+                    return "Bullet"
+                if new_number == "2":
+                    return "Blitz"
+                else:
+                    return "Coup rapide"

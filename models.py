@@ -18,7 +18,7 @@ class Player:
         gender=None,
         rank=0,
         score=0,
-        is_playing=False,
+        is_playing="False",
     ):
         self.first_name = first_name
         self.last_name = last_name
@@ -130,9 +130,6 @@ class Player:
     def list_not_participants():
         Player = Query()
         result = players_table.search(Player.is_playing == "False")
-        if len(result) == 0:
-            print("Aucun joueur disponible.")
-            return
         return result
 
     @staticmethod
@@ -215,6 +212,38 @@ class Match:
         match[1][0] = Player.instantiate_player(match[1][0])
         return match
 
+    @staticmethod
+    def compare(new_match, past_match):
+        #Once deployed, function to compare new_match[0]etc name, name, birth_date
+        if new_match[0][0] == past_match[0][0] or new_match[0][0] == past_match[1][0]:
+            if new_match[1][0] == past_match[0][0] or new_match[1][0] == past_match[1][0]:
+                return True
+
+    @staticmethod
+    def match_sorting(new_matches, past_matches):
+        """Use Match.compare to check whether two players have already
+        played together. If so, player1 plays with player3, etc.
+        If it's the last match, the algorythm change to ensure no repetition."""
+        i = 0
+        for new_match in new_matches:
+            for past_match in past_matches:
+                if compare(new_match, past_match) == True:
+                    if i == len(new_matches)-1:
+                        pair_one = ([new_matches[i][0][0], new_matches[i][0][1]],
+                                     [new_matches[i-1][0][0], new_matches[i-1][0][1]])
+                        pair_two = ([new_matches[i][1][0], new_matches[i][1][1]],
+                                     [new_matches[i-1][1][0], new_matches[i-1][1][1]])
+                        new_matches[i] = pair_one
+                        new_matches[i-1] = pair_two
+                    else:
+                        pair_one = ([new_matches[i][0][0], new_matches[i][0][1]],
+                                     [new_matches[i+1][0][0], new_matches[i+1][0][1]])
+                        pair_two = ([new_matches[i][1][0], new_matches[i][1][1]],
+                                     [new_matches[i+1][1][0], new_matches[i+1][1][1]])
+                        new_matches[i] = pair_one
+                        new_matches[i+1] = pair_two
+            i += 1
+
 class Round:
     def __init__(self, name, start=None, end=None, matches=[]):
         self.name = name
@@ -267,22 +296,24 @@ class Tournament:
         name=None,
         place=None,
         date=None,
-        end=None,
+        duration=None,
         time_control=None,
         description=None,
         nb_rounds=NB_ROUNDS,
         rounds=[],
         players=[],
+        ended=None
     ):
         self.name = name
         self.place = place
         self.date = date
-        self.end = end
+        self.duration = duration
         self.time_control = time_control
         self.description = description
         self.nb_rounds = nb_rounds
         self.rounds = rounds
         self.players = players
+        self.ended = None
 
     @staticmethod
     def all_tournaments():
@@ -292,8 +323,9 @@ class Tournament:
     @staticmethod
     def instantiate_tournament(tournament_dict):
         attributes = list(tournament_dict.values())
-        rounds_list = Round.instantiate_rounds(attributes[7])
         participants_list = []
+        rounds_list = Round.instantiate_rounds(attributes[7])
+
         for participant in attributes[8]:
             new_participant = Player.instantiate_player(participant)
             participants_list.append(new_participant)
@@ -307,15 +339,15 @@ class Tournament:
             attributes[6],
             rounds_list,
             participants_list,
+            attributes[9]
         )
         return result
 
     @staticmethod
     def return_last_tournament():
         list_tournaments = tournament_table.all()
-        i = len(list_tournaments)
         last_tournament = Tournament.instantiate_tournament(
-            list_tournaments[int(i) - 1]
+            list_tournaments[-1]
         )
         return last_tournament
 
@@ -349,20 +381,24 @@ class Tournament:
 
         else:
             to_sort = self.players.copy()
+            print(len(self.players))
             sorted = Round.sort_players(to_sort)
             i = 0
 
             new_round = Round(f"Tour {nb_round}", start=Round.time_now())
             list_matches = []
-
+            print("LONGUEUR MATCHES (pré-ajout)")
+            print(f"{new_round.matches}")
             for i in range(0, 7, 2):
-                match = (
+                match_to_add = (
                     [sorted[i], sorted[i].score],
                     [sorted[i+1], sorted[i+1].score]
                 )
 
-                self.rounds.append(new_round)
-                new_round.matches.append(match)
+                new_round.matches.append(match_to_add)
+            print("LONGUEUR MATCH (post-ajout)")
+            print(new_round.matches)
+            self.rounds.append(new_round)
 
     def round_end(self, results):
         current_round = self.rounds[-1]
@@ -381,6 +417,7 @@ class Tournament:
 
         for player in self.players:
             player.update_participant()
+
         self.round_update()
 
         for match in current_round.matches:
@@ -392,12 +429,20 @@ class Tournament:
         rounds_serialized = []
         players_to_serialize = self.players.copy()
         players_serialized = []
+        i = 0
+        j = 1
+
+        for round_instance in self.rounds:
+            print(f"ROUND {j}\n")
+            print(round_instance.matches)
+            j += 1
 
         for round_instance in rounds_to_serialize:
-            for match in round_instance.matches:
-                print(match)
+            print(round_instance.matches)
+            print(i)
             round_instance = round_instance.serialize_round()
             rounds_serialized.append(round_instance)
+            i += 1
 
         for player in players_to_serialize:
             player = Player.serialize_player(player)
@@ -425,11 +470,17 @@ class Tournament:
             "Nom": self.name,
             "Lieu": self.place,
             "Date": self.date,
-            "Fin": self.end,
+            "Duree": self.duration,
             "Gestion temps": self.time_control,
             "Description": self.description,
             "Nombre de rounds": self.nb_rounds,
             "Rounds": list_rounds,
             "Participants": list_participants,
+            "Fini": self.ended
         }
         tournament_table.insert(serialized_tournament)
+
+    def ended(self):
+        tournament_table.update(
+            {"Fini": "True"}, (Tournament["Date"] == self.date)
+        )

@@ -17,6 +17,11 @@ Vous pouvez quitter à tout moment en tapant Q.
 
 1. Sélectionner des joueurs existants
 2. Créer un nouveau joueur.\n"""
+
+    ranking_rounds = """\nVeuillez taper le caractère correspondant à l'option souhaitée.
+1. Retour au menu principal
+Q. Quitter\n"""
+
     menu_change_ranks = """
 Sélectionnez un joueur en tapant le numéro associé, puis tapez son nouveau rang.
 Vous pouvez retourner sur l'écran d'accueil en tapant R.
@@ -26,10 +31,14 @@ Vous pouvez quitter à tout moment en tapant Q.
 Pour retourner au menu Joueurs, tapez R.
 
 Pour créer un joueurs, veuillez taper les informations suivantes :\n"""
-    player_new_date = """Date invalide. Format : jour/mois/année.
+    new_gender = """Veuillez entrer un genre : homme ou femme.\n"""
+    wrong_date = """Date invalide. Format : jour/mois/année.
 Merci d'entrer une date conforme.\n"""
-    player_new_gender = """Veuillez entrer un genre : homme ou femme.\n"""
-    player_new_rank = """Merci d'entrer un classement en chiffre.\n"""
+    new_number = """Merci d'entrer un chiffre.\n"""
+    wrong_time_control = """Veuillez taper le chiffre correspond à votre sélection :
+1. Bullet
+2. Blitz
+3. Coup rapide\n"""
     menu_rapport = """Bienvenue dans le menu de rapports.
 Veuillez taper le chiffre correspondant à l'action souhaitée :
 1. Liste de tous les joueurs
@@ -47,9 +56,9 @@ A tout momment, vous pouvez quitter en tapant Q.
 Pour retourner au menu Joueurs, tapez R.\n"""
     rankings_main = """RAPPORTS
 Veuillez entrer le chiffre correspondant à la sélection souhaitée.
+Pour retourner au menu principal, tapez R.\n
 1. Liste de tous les joueurs
-2. Liste de tous les tournois
-3. Retour à l'écran principal\n"""
+2. Liste de tous les tournois\n"""
     rankings_players = """RAPPORTS : JOUEURS\n
 Veuillez entrer le chiffre correspondant à la sélection souhaitée.
 1. Liste par ordre alphabétique

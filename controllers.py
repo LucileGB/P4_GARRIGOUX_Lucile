@@ -107,13 +107,11 @@ class PlayerControl:
                 print("Menu quitté.\n")
                 is_on == False
                 MainControl.main()
+            elif selection[1].isnumeric() == False:
+                print("Réponse invalide.")
             else:
-                first_name = selection[0]["first_name"]
-                last_name = selection[0]["last_name"]
-                birth_date = selection[0]["birth_date"]
-                models.Player.change_rank(
-                    first_name, last_name, birth_date, int(selection[1])
-                )
+                player = models.Player(selection[0])
+                player.change_rank(int(selection[1]))
 
     def create_player():
         attributes = views.PlayerMenu.create_player()
@@ -134,13 +132,14 @@ class PlayerControl:
                 print("Champs classement :")
                 attributes[4] = helper.CheckForm.check_number(attributes[4])
 
-            new_player = models.Player(
-                attributes[0],
-                attributes[1],
-                attributes[2],
-                attributes[3],
-                attributes[4],
-            )
+            new_player = models.Player({"first_name": attributes[0],
+                                        "last_name": attributes[1],
+                                        "birth_date": attributes[2],
+                                        "gender": attributes[3],
+                                        "rank": attributes[4],
+                                        "score": 0,
+                                        "is_playing": "False"})
+                                        
             if new_player.has_double() == True:
                 print("Ce joueur existe déjà.\n")
                 views.PlayerMenu.main()
@@ -163,10 +162,8 @@ class PlayerControl:
                 is_on == False
                 PlayerControl.main()
             else:
-                first_name = selection["first_name"]
-                last_name = selection["last_name"]
-                birth_date = selection["birth_date"]
-                models.Player.is_playing_true(first_name, last_name, birth_date)
+                selection = models.Player(selection)
+                selection.is_playing_true()
 
 
 class MainControl:

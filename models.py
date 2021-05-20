@@ -12,21 +12,33 @@ tournament_table = db.table("tournaments")
 class Player:
     def __init__(
         self,
-        first_name=None,
-        last_name=None,
-        birth_date=None,
-        gender=None,
-        rank=0,
-        score=0,
-        is_playing="False",
+        params,
     ):
-        self.first_name = first_name
-        self.last_name = last_name
-        self.birth_date = birth_date
-        self.gender = gender
-        self.rank = rank
-        self.score = score
-        self.is_playing = is_playing
+        self.first_name = params["first_name"]
+        self.last_name = params["last_name"]
+        self.birth_date = params["birth_date"]
+        self.gender = params["gender"]
+        self.rank = params["rank"]
+        self.score = params["score"]
+        self.is_playing = params["is_playing"]
+
+    def change_rank(self, new_value):
+        Participant = Query()
+        players_table.update(
+            {"rank": new_value},
+            (Participant["first_name"] == self.first_name)
+            & (Participant["last_name"] == self.last_name)
+            & (Participant["birth_date"] == self.birth_date),
+        )
+
+    def is_playing_true(self):
+        Participant = Query()
+        players_table.update(
+            {"is_playing": "True"},
+            (Participant["first_name"] == self.first_name)
+            & (Participant["last_name"] == self.last_name)
+            & (Participant["birth_date"] == self.birth_date),
+        )
 
     def has_double(self):
         Player = Query()
@@ -74,42 +86,14 @@ class Player:
         return serialized_players
 
     @staticmethod
-    def change_rank(first_name, last_name, birth_date, new_value):
-        Participant = Query()
-        players_table.update(
-            {"rank": new_value},
-            (Participant["first_name"] == first_name)
-            & (Participant["last_name"] == last_name)
-            & (Participant["birth_date"] == birth_date),
-        )
-    @staticmethod
     def clear_participants():
         players_table.update({"is_playing": "False"})
         players_table.update({"score": 0})
 
     @staticmethod
     def instantiate(player_dict):
-        attributes = list(player_dict.values())
-        result = Player(
-            attributes[0],
-            attributes[1],
-            attributes[2],
-            attributes[3],
-            attributes[4],
-            attributes[5],
-            attributes[6],
-        )
+        result = Player(player_dict)
         return result
-
-    @staticmethod
-    def is_playing_true(first_name, last_name, birth_date):
-        Participant = Query()
-        players_table.update(
-            {"is_playing": "True"},
-            (Participant["first_name"] == first_name)
-            & (Participant["last_name"] == last_name)
-            & (Participant["birth_date"] == birth_date),
-        )
 
     @staticmethod
     def list_abridged(list_to_abridge):
@@ -136,26 +120,6 @@ class Player:
         Player = Query()
         result = players_table.search(Player.is_playing == "True")
         return result
-
-    @staticmethod
-    def show_all(serialized_player):
-        """Show all attributes of all players."""
-        i = 0
-        for player in serialized_players:
-            j = 0
-            keys = (
-                "Prénom",
-                "Nom de famille",
-                "Date de naissance",
-                "Genre",
-                "Classement",
-            )
-            attributes = list(player.values())
-            print(f"\n{i+1}. {attributes[0].upper()} {attributes[1].upper()}")
-            i += 1
-            for key in keys:
-                print(f"{keys[j]} : {attributes[j]}")
-                j += 1
 
     @staticmethod
     def alphabetical_list(unsorted):

@@ -158,6 +158,7 @@ class PlayerMenu(Menu):
     def change_ranks(player_list):
         has_chosen = False
         while has_chosen == False:
+            print("Sélection d'un joueur :")
             selected = input(texts.Texts.new_number)
             if selected == "q":
                 return "q"
@@ -176,7 +177,7 @@ class PlayerMenu(Menu):
                 new_rank = input("Veuillez taper son nouveau classement : ")
                 confirm = Menu.yes_no()
                 if confirm == True:
-                    result = (player, new_rank)
+                    result = (player, new_rank.lower())
                     return result
 
 

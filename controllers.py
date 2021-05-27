@@ -45,7 +45,6 @@ class TournamentControl:
                 "players": [],
                 "ended": "no",
             }
-
             print("Le tournoi a été créé avec succès.\n")
             return models.Tournament(dict_tournament)
 
@@ -143,12 +142,11 @@ class PlayerControl:
                     "last_name": form[1],
                     "birth_date": form[2],
                     "gender": form[3],
-                    "rank": form[4],
+                    "rank": int(form[4]),
                     "score": 0,
                     "is_playing": "False",
                 }
             )
-
             if new_player.has_double() == True:
                 print("Ce joueur existe déjà.\n")
                 views.PlayerMenu.main()

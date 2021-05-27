@@ -35,17 +35,19 @@ class CheckForm:
         while str(number).isnumeric() == False:
             new_number = views.Menu.input_new(texts.Texts.new_number)
             if str(new_number).isnumeric() == True:
-                return int(new_number)
+                return new_number
 
     def control_time(number):
         """Once it receives the proper input, returns chosen time control."""
         right_answers = ["1", "2", "3"]
-        while str(number).isnumeric() == False and str(number) not in right_answers:
-            new_number = views.Menu.input_new(texts.Texts.wrong_time_control)
-            if str(new_number).isnumeric() == True and str(new_number) in right_answers:
-                if new_number == "1":
-                    return "Bullet"
-                if new_number == "2":
-                    return "Blitz"
-                else:
-                    return "Coup rapide"
+        while number.isnumeric() == False or number not in right_answers:
+            print("wrong!")
+            number = views.Menu.input_new(texts.Texts.wrong_time_control)
+        if str(number).isnumeric() == True and str(number) in right_answers:
+            if number == "1":
+                result = "Bullet"
+            if number == "2":
+                result = "Blitz"
+            else:
+                result = "Coup rapide"
+            return result

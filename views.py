@@ -18,8 +18,7 @@ class Menu:
             if choice.isnumeric() == True:
                 if Menu.input_ok(range(1, len(field_list) + 1), int(choice)) == True:
                     new_answer = input("Veuillez entrer une nouvelle réponse.\n")
-                    field_list.pop(int(choice) - 1)
-                    field_list.insert(int(choice) - 1, new_answer)
+                    field_list[int(choice) - 1] = new_answer
                     return field_list
 
     @staticmethod
@@ -192,6 +191,7 @@ class Rankings(Menu):
 
     @staticmethod
     def ranking_players():
+        """Main menu to access player rankings."""
         right_answers = ["1", "2", "3", "q"]
         answer = ""
         while Menu.input_ok(right_answers, answer) == False:
@@ -200,6 +200,7 @@ class Rankings(Menu):
 
     @staticmethod
     def show_list(list_players):
+        """Prints a list to be used in player ranking menus."""
         i = 0
         rankings = list(sorted(list_players, key=lambda i: i["rank"], reverse=True))
         for player in list_players:
@@ -253,7 +254,7 @@ class Rankings(Menu):
             "Date : ",
             "Durée (en jours) : ",
             "Contrôle de temps : ",
-            "Notes ou descriptions : ",
+            "Notes ou description : ",
         ]
         for tournament in list_tournament:
             attributes = list(tournament.values())
@@ -282,9 +283,9 @@ class Rankings(Menu):
             "Nom : ",
             "Adresse : ",
             "Date : ",
-            "Date de fin : ",
+            "Durée (en jours) : ",
             "Contrôle de temps : ",
-            "Notes ou descriptions : ",
+            "Notes ou description : ",
         ]
         for field in form:
             print(f"{field}{attributes[i]}")
@@ -301,11 +302,10 @@ class Rankings(Menu):
         attributes = list(tournament.values())
         for round in attributes[7]:
             i = 0
-            rounds_attr = list(round.values())
-            print(f"\n{rounds_attr[0].upper()}")
-            print(f"Début : {rounds_attr[1]}")
-            print(f"Fin : {rounds_attr[2]}")
-            for match in rounds_attr[3]:
+            print(f"\n{rounds['name'].upper()}")
+            print(f"Début : {round['start']}")
+            print(f"Fin : {round['end']}")
+            for match in round['match']:
                 player_one = f"{match[0][0]['first_name']} {match[0][0]['last_name']}"
                 score_one = f"{match[0][1]}"
                 player_two = f"{match[1][0]['first_name']} {match[1][0]['last_name']}"
@@ -343,17 +343,15 @@ class TournamentMenu(Menu):
         print("\n\nNOUVEAU TOURNOI :\n")
         Menu.print_results(form_tournament, results)
 
-        answer = Menu.yes_no()
-        if answer == True:
-            return results
-        else:
-            while answer == False:
-                results = Menu.change_form(results)
-                j = 0
-                for item in results:
-                    print(f"{j}. {item}")
-                    j += 1
-                answer = Menu.yes_no()
+        confirm = Menu.yes_no()
+        while confirm == False:
+            results = Menu.change_form(results)
+            i = 1
+            for item in results:
+                print(f"{i}. {item}")
+                i += 1
+            confirm = Menu.yes_no()
+        return results
 
     @staticmethod
     def tournament_round(tournament):

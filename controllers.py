@@ -56,10 +56,14 @@ class TournamentControl:
             TournamentControl.round_control()
         current_tournament.ended()
 
-        print("Résultats du tournoi :")
         list_tournament = models.Tournament.all_tournaments()
         finished_tournament = list_tournament[-1]
-        choice = views.TournamentMenu.end_screen(finished_tournament)
+        rankings = list(
+            sorted(
+                finished_tournament["players"], key=lambda i: i["score"], reverse=True
+            )
+        )
+        choice = views.TournamentMenu.end_screen(finished_tournament, rankings)
         if choice == "1":
             MainControl.main()
         elif choice == "q":

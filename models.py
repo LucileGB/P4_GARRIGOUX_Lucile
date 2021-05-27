@@ -1,4 +1,5 @@
 import datetime
+from copy import deepcopy
 from tinydb import TinyDB, Query
 
 """NB_PLAYERS sets the number of players per tournament.
@@ -71,16 +72,18 @@ class Player:
 
     def update_participant(self):
         Participant = Query()
-        players_table.update({"score": self.score},
-                (Participant["first_name"] == self.first_name)
-                & (Participant["last_name"] == self.last_name)
-                & (Participant["birth_date"] == self.birth_date),
-            )
-        players_table.update({"rank": self.rank},
-                (Participant["first_name"] == self.first_name)
-                & (Participant["last_name"] == self.last_name)
-                & (Participant["birth_date"] == self.birth_date),
-            )
+        players_table.update(
+            {"score": self.score},
+            (Participant["first_name"] == self.first_name)
+            & (Participant["last_name"] == self.last_name)
+            & (Participant["birth_date"] == self.birth_date),
+        )
+        players_table.update(
+            {"rank": self.rank},
+            (Participant["first_name"] == self.first_name)
+            & (Participant["last_name"] == self.last_name)
+            & (Participant["birth_date"] == self.birth_date),
+        )
 
     @staticmethod
     def all():
@@ -125,15 +128,14 @@ class Player:
     @staticmethod
     def rank_list():
         players = players_table.all()
-        return sorted(players, key=lambda value: value["rank"],
-                        reverse = True)
+        return sorted(players, key=lambda value: value["rank"], reverse=True)
 
     @staticmethod
     def final_ranking_list(tournament):
         participants = tournament.players
-        players = sorted(players, key=lambda Player: Player.score,
-                        reverse = True)
+        players = sorted(players, key=lambda Player: Player.score, reverse=True)
         return players
+
 
 class Match:
     def __init__(self, match=([], [])):
@@ -172,36 +174,71 @@ class Match:
         return match
 
     @staticmethod
-    def compare(new_match, past_match):
-        #Once deployed, function to compare new_match[0]etc name, name, birth_date
-        if new_match[0][0] == past_match[0][0] or new_match[0][0] == past_match[1][0]:
-            if new_match[1][0] == past_match[0][0] or new_match[1][0] == past_match[1][0]:
-                return True
+    def compare_players(player_one, player_two):
+        """Compare two players' complete name and birth date only, since rank
+        and score can vary."""
+        if (
+            player_one.first_name == player_two.first_name
+            and player_one.last_name == player_two.last_name
+            and player_one.birth_date == player_two.birth_date
+        ):
+            return True
+        else:
+            return False
 
     @staticmethod
-    def match_sorting(new_matches, past_matches):
+    def in_match(new_player, past_player_one, past_player_two):
+        """Check whether a player is one of two other players."""
+        if Match.compare_players(new_player, past_player_one) or Match.compare_players(
+            new_player, past_player_two
+        ):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def compare(new_match, past_match):
+        if Match.in_match(
+            new_match[0][0], past_match[0][0], past_match[1][0]
+        ) and Match.in_match(new_match[1][0], past_match[0][0], past_match[1][0]):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def matches_sorting(new_matches, past_matches):
         """Uses Match.compare to check whether two players have already
         played together. If so, player1 plays with player3, etc.
         If it's the last match, the algorythm changes to ensure no repetition."""
         i = 0
         for new_match in new_matches:
             for past_match in past_matches:
-                if compare(new_match, past_match) == True:
-                    if i == len(new_matches)-1:
-                        pair_one = ([new_matches[i][0][0], new_matches[i][0][1]],
-                                     [new_matches[i-1][0][0], new_matches[i-1][0][1]])
-                        pair_two = ([new_matches[i][1][0], new_matches[i][1][1]],
-                                     [new_matches[i-1][1][0], new_matches[i-1][1][1]])
+                if Match.compare(new_match, past_match) == True:
+                    if i == len(new_matches) - 1:
+                        pair_one = (
+                            [new_matches[i][0][0], new_matches[i][0][1]],
+                            [new_matches[i - 1][0][0], new_matches[i - 1][0][1]],
+                        )
+                        pair_two = (
+                            [new_matches[i][1][0], new_matches[i][1][1]],
+                            [new_matches[i - 1][1][0], new_matches[i - 1][1][1]],
+                        )
                         new_matches[i] = pair_one
-                        new_matches[i-1] = pair_two
+                        new_matches[i - 1] = pair_two
                     else:
-                        pair_one = ([new_matches[i][0][0], new_matches[i][0][1]],
-                                     [new_matches[i+1][0][0], new_matches[i+1][0][1]])
-                        pair_two = ([new_matches[i][1][0], new_matches[i][1][1]],
-                                     [new_matches[i+1][1][0], new_matches[i+1][1][1]])
+                        pair_one = (
+                            [new_matches[i][0][0], new_matches[i][0][1]],
+                            [new_matches[i + 1][0][0], new_matches[i + 1][0][1]],
+                        )
+                        pair_two = (
+                            [new_matches[i][1][0], new_matches[i][1][1]],
+                            [new_matches[i + 1][1][0], new_matches[i + 1][1][1]],
+                        )
                         new_matches[i] = pair_one
-                        new_matches[i+1] = pair_two
+                        new_matches[i + 1] = pair_two
             i += 1
+        return new_matches
+
 
 class Round:
     def __init__(self, params):
@@ -218,15 +255,17 @@ class Round:
         for dictionary in list_rounds:
             for match in dictionary["matches"]:
                 match = Match.instantiate_players(match)
-            result = Round(params)
+            result = Round(dictionary)
             list_instances.append(result)
         return list_instances
 
     @staticmethod
     def sort_players(list_players):
-        list_players = list(reversed(
-            sorted(list_players, key=lambda Player: (Player.score, Player.rank))
-        ))
+        list_players = list(
+            reversed(
+                sorted(list_players, key=lambda Player: (Player.score, Player.rank))
+            )
+        )
         return list_players
 
     @staticmethod
@@ -281,27 +320,29 @@ class Tournament:
     @staticmethod
     def return_last_tournament():
         list_tournaments = tournament_table.all()
-        last_tournament = Tournament.instantiate(
-            list_tournaments[-1]
-        )
+        last_tournament = Tournament.instantiate(list_tournaments[-1])
         return last_tournament
 
     def add_player(self, Player):
         self.players.append(Player)
 
     def round_start(self):
+        """Create the new round and its matches."""
         nb_round = len(self.rounds) + 1
-        past_matches = []
 
         if len(self.rounds) == 0:
             higher_tier = []
             lower_tier = self.players.copy()
             i = 0
 
-            new_round = Round({"name": f"Tour {nb_round}",
-                                "start": Round.time_now(),
-                                "end": None,
-                                "matches": []})
+            new_round = Round(
+                {
+                    "name": f"Tour {nb_round}",
+                    "start": Round.time_now(),
+                    "end": None,
+                    "matches": [],
+                }
+            )
             self.rounds.append(new_round)
             lower_tier = new_round.sort_players(lower_tier)
 
@@ -319,33 +360,39 @@ class Tournament:
 
         else:
             to_sort = self.players.copy()
-            print(len(self.players))
             sorted = Round.sort_players(to_sort)
+            list_matches = []
+            past_matches = []
             i = 0
 
-            new_round = Round({"name": f"Tour {nb_round}",
-                                "start": Round.time_now(),
-                                "end": None,
-                                "matches": []})
-            list_matches = []
-            print("LONGUEUR MATCHES (pré-ajout)")
-            print(f"{new_round.matches}")
-            for i in range(0, 7, 2):
+            for round in self.rounds:
+                for match in round.matches:
+                    past_matches.append(match)
+
+            new_round = Round(
+                {
+                    "name": f"Tour {nb_round}",
+                    "start": Round.time_now(),
+                    "end": None,
+                    "matches": [],
+                }
+            )
+
+            for i in range(0, NB_PLAYERS - 1, 2):
                 match_to_add = (
                     [sorted[i], sorted[i].score],
-                    [sorted[i+1], sorted[i+1].score]
+                    [sorted[i + 1], sorted[i + 1].score],
                 )
+                list_matches.append(match_to_add)
 
-                new_round.matches.append(match_to_add)
-            print("LONGUEUR MATCH (post-ajout)")
-            print(new_round.matches)
+            list_matches = Match.matches_sorting(list_matches, past_matches)
+            new_round.matches = list_matches
+
             self.rounds.append(new_round)
 
     def round_end(self, results):
+        print(len(self.rounds))
         current_round = self.rounds[-1]
-        list_rounds = []
-        list_participants = []
-        Tournament = Query()
         i = 0
 
         current_round.end = f"{Round.time_now()}"
@@ -356,46 +403,34 @@ class Tournament:
             match = outcome
             i += 1
 
+        self.round_update()
+
+    def round_update(self):
+        """Updates the tournament's participants score and the round's
+        result in the database."""
+        Tournament = Query()
+        rounds_to_serialize = deepcopy(self.rounds)
+        players_to_serialize = deepcopy(self.players)
+        rounds_serialized = []
+        players_serialized = []
+
         for player in self.players:
             player.update_participant()
 
-        self.round_update()
-
-        for match in current_round.matches:
-            match = Match.instantiate_players(match)
-
-    def round_update(self):
-        Tournament = Query()
-        rounds_to_serialize = self.rounds.copy()
-        rounds_serialized = []
-        players_to_serialize = self.players.copy()
-        players_serialized = []
-        i = 0
-        j = 1
-
-        for round_instance in self.rounds:
-            print(f"ROUND {j}\n")
-            print(round_instance.matches)
-            j += 1
-
         for round_instance in rounds_to_serialize:
-            print(round_instance.matches)
-            print(i)
             round_instance = round_instance.serialize()
             rounds_serialized.append(round_instance)
-            i += 1
 
         for player in players_to_serialize:
             player = Player.save(player)
             players_serialized.append(player)
 
         tournament_table.update(
-            {"Rounds": rounds_serialized}, (Tournament["date"] == self.date)
+            {"rounds": rounds_serialized}, (Tournament["date"] == self.date)
         )
         tournament_table.update(
-            {"Participants": players_serialized}, (Tournament["date"] == self.date)
+            {"players": players_serialized}, (Tournament["date"] == self.date)
         )
-
 
     def save(self):
         list_rounds = []
@@ -417,11 +452,9 @@ class Tournament:
             "nb_rounds": self.nb_rounds,
             "rounds": list_rounds,
             "players": list_participants,
-            "ended": self.ended
+            "ended": self.ended,
         }
         tournament_table.insert(serialized_tournament)
 
     def ended(self):
-        tournament_table.update(
-            {"ended": "True"}, (Tournament["date"] == self.date)
-        )
+        tournament_table.update({"ended": "True"}, (Tournament["date"] == self.date))

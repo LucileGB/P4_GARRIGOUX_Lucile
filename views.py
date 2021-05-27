@@ -361,7 +361,7 @@ class TournamentMenu(Menu):
         nb_round = len(tournament.rounds)
         current_round = tournament.rounds[nb_round - 1]
         i = 1
-        print(f"Bienvenue dans {tournament.name}.\n")
+        print(f"{tournament.name}.\n")
         print(f"Round actuel : {current_round.name}")
         print(f"Début du round : {current_round.start}")
         print('A tout moment, vous pouvez quitter en tapant "Q".')
@@ -377,36 +377,37 @@ class TournamentMenu(Menu):
         return outcome
 
     @staticmethod
-    def end_screen(tournament):
+    def end_screen(tournament, list_players):
         """Shows the tournament's result, printing the winner on top."""
         right_answers = ["1", "q"]
         answer = ""
-        attributes = list(tournament.values())
-        player_rank = 0
-        rankings = list(sorted(attributes[8], key=lambda i: i["score"], reverse=True))
         print("SCORES FINAUX\n")
-        for player in rankings:
-            player_attributes = list(player.values())
-            if player_rank == 0:
-                print("GAGNANT :")
-                print(f"\n{i+1}. {attributes[0]} {attributes[1].upper()}")
-                print(f"Classement : {attributes[4]} points\n\n")
-            else:
-                print(f"{player_rank+1} place :")
-                player_attributes = list(player.values())
-                print(f"\n{i+1}. {attributes[0]} {attributes[1].upper()}")
-                print(f"Classement : {attributes[4]} points\n")
-        while Menu.input_ok(right_answers, answer) == False:
-            answer = input(Texts.rankings_players_rank)
-        return answer.lower()
+        i = 0
+        rankings = list(sorted(list_players, key=lambda i: i["score"], reverse=True))
+        for player in list_players:
+            rank = ""
+            for player_r in rankings:
+                if player == player_r:
+                    rank = rankings.index(player_r) + 1
 
-        for round in attributes[7]:
+            print(f"\n{i+1}. {player['first_name']} {player['last_name']}")
+            print(f"Date de naissance : {player['birth_date']}")
+            print(f"Genre : {player['gender']}")
+            if rank == 1:
+                print(f"Classement : {player['score']} points (1ère place)")
+            else:
+                print(f"Classement : {player['score']} points ({rank}ème place)")
+            i += 1
+        while Menu.input_ok(right_answers, answer) == False:
+            answer = input(Texts.rankings_players_rank).lower()
+        return answer
+
+        for round in tournament['rounds']:
             i = 0
-            rounds_attr = list(round.values())
-            print(f"\n{rounds_attr[0].upper()}")
-            print(f"Début : {rounds_attr[1]}")
-            print(f"Durée : {rounds_attr[2]}")
-            for match in rounds_attr[3]:
+            print(f"\n{round['name'][0].upper()}")
+            print(f"Début : {round['start']}")
+            print(f"Durée : {round['end']}")
+            for match in round['matches']:
                 player_one = f"{match[0][0]['first_name']} {match[0][0]['last_name']}"
                 score_one = f"{match[0][1]}"
                 player_two = f"{match[1][0]['first_name']} {match[1][0]['last_name']}"

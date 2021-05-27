@@ -1,10 +1,11 @@
 import sys
 
-import helper
+from helper import CheckForm
 import models
-import texts
 import views
 
+"""NB_PLAYERS sets the number of players per tournament.
+NB_ROUNDS sets the number of rounds per tournament."""
 NB_PLAYERS = 8
 NB_ROUNDS = 4
 
@@ -23,15 +24,15 @@ class TournamentControl:
         elif form == "r":
             MainControl.main()
         else:
-            right_date = helper.CheckForm.check_date(form[2])
-            if helper.CheckForm.check_date(form[2]) == False:
+            right_date = CheckForm.check_date(form[2])
+            if CheckForm.check_date(form[2]) == False:
                 print("Erreur sur la date du tournoi.")
-                new_date = helper.CheckForm.correct_date(form[2])
+                new_date = CheckForm.correct_date(form[2])
                 form[2] = new_date
-            if helper.CheckForm.check_number(form[3]) == False:
+            if CheckForm.check_number(form[3]) == False:
                 print("Merci d'entrer un chiffre pour la durée du tournoi.")
-                form[3] == helper.CheckForm.check_number(form[3])
-            form[4] = helper.CheckForm.control_time(form[4])
+                form[3] == CheckForm.check_number(form[3])
+            form[4] = CheckForm.control_time(form[4])
             dict_tournament = {
                 "name": form[0],
                 "place": form[1],
@@ -49,8 +50,7 @@ class TournamentControl:
             return models.Tournament(dict_tournament)
 
     @staticmethod
-    def launch_tournament():
-        # rename launch_tournament
+    def run_tournament():
         i = 0
         current_tournament = models.Tournament.return_last_tournament()
         while len(current_tournament.rounds) < NB_ROUNDS:
@@ -103,7 +103,7 @@ class PlayerControl:
     def change_rank():
         is_on = True
         list_all = models.Player.list_abridged(models.Player.all())
-        while is_on == True:
+        while is_on:
             print("CHANGER LE CLASSEMENT D'UN JOUEUR\n")
             selection = views.PlayerMenu.change_ranks(list_all)
             if selection == "q":
@@ -125,17 +125,17 @@ class PlayerControl:
         elif form == "q":
             sys.exit
         else:
-            right_date = helper.CheckForm.check_date(form[2])
-            if helper.CheckForm.check_date(form[2]) == False:
+            right_date = CheckForm.check_date(form[2])
+            if CheckForm.check_date(form[2]) == False:
                 print("Champs date de naissance :")
-                new_date = helper.CheckForm.correct_date(form[2])
+                new_date = CheckForm.correct_date(form[2])
                 form[2] = new_date
-            if helper.CheckForm.check_gender(form[3]) == False:
+            if CheckForm.check_gender(form[3]) == False:
                 print("Champs genre :")
-                form[3] = helper.CheckForm.check_gender(form[3])
-            if helper.CheckForm.check_number(form[4]) == False:
+                form[3] = CheckForm.check_gender(form[3])
+            if CheckForm.check_number(form[4]) == False:
                 print("Champs classement :")
-                form[4] = helper.CheckForm.check_number(form[4])
+                form[4] = CheckForm.check_number(form[4])
 
             new_player = models.Player(
                 {
@@ -201,7 +201,7 @@ class MainControl:
                     print("Aucun tournoi en cours ! Veuillez créer un tournoi.")
                     MainControl.create_tournament()
                 else:
-                    TournamentControl.launch_tournament()
+                    TournamentControl.run_tournament()
 
         elif result == "r":
             MainControl.main_rankings()
@@ -216,10 +216,10 @@ class MainControl:
         while len(models.Player.list_participants()) < NB_PLAYERS:
             PlayerControl.main()
         for player_dict in models.Player.list_participants():
-            player = models.Player.instantiate(player_dict)
+            player = models.Player(player_dict)
             tournament_instance.players.append(player)
         tournament_instance.save()
-        TournamentControl.launch_tournament()
+        TournamentControl.run_tournament()
 
     def main_rankings():
         choice = views.Rankings.main()

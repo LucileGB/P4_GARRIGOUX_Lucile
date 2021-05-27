@@ -1,6 +1,8 @@
 import datetime
 from tinydb import TinyDB, Query
 
+"""NB_PLAYERS sets the number of players per tournament.
+NB_ROUNDS sets the number of rounds per tournament."""
 NB_PLAYERS = 8
 NB_ROUNDS = 4
 
@@ -43,9 +45,9 @@ class Player:
     def has_double(self):
         Player = Query()
         result = players_table.search(
-            (Player.first_name == f"{self.first_name}")
-            & (Player.last_name == f"{self.last_name}")
-            & (Player.birth_date == f"{self.birth_date}")
+            (Player.first_name == self.first_name)
+            & (Player.last_name == self.last_name)
+            & (Player.birth_date == self.birth_date)
         )
         if len(result) == 0:
             return False
@@ -89,10 +91,6 @@ class Player:
     def clear_participants():
         players_table.update({"is_playing": "False"})
         players_table.update({"score": 0})
-
-    @staticmethod
-    def instantiate(player_dict):
-        return Player(player_dict)
 
     @staticmethod
     def list_abridged(list_to_abridge):
@@ -167,9 +165,10 @@ class Match:
         return self.match
 
     @staticmethod
-    def instantiate_match(match):
-        match[0][0] = Player.instantiate(match[0][0])
-        match[1][0] = Player.instantiate(match[1][0])
+    def instantiate_players(match):
+        """Prepare match to be added to a round instance."""
+        match[0][0] = Player(match[0][0])
+        match[1][0] = Player(match[1][0])
         return match
 
     @staticmethod
@@ -205,21 +204,21 @@ class Match:
             i += 1
 
 class Round:
-    def __init__(self, name, start=None, end=None, matches=[]):
-        self.name = name
-        self.start = start
-        self.end = end
-        self.matches = matches
+    def __init__(self, params):
+        self.name = params["name"]
+        self.start = params["start"]
+        self.end = params["end"]
+        self.matches = params["matches"]
 
     @staticmethod
     def instantiate(list_rounds):
+        """Instantiate all the rounds in a tournament."""
         list_instances = []
 
         for dictionary in list_rounds:
-            attributes = list(dictionary.values())
-            for match in attributes[3]:
-                match = Match.instantiate_match(match)
-            result = Round(attributes[0], attributes[1], attributes[2], attributes[3])
+            for match in dictionary["matches"]:
+                match = Match.instantiate_players(match)
+            result = Round(params)
             list_instances.append(result)
         return list_instances
 
@@ -242,10 +241,10 @@ class Round:
             match = match_to_serialize.serialize_match()
 
         serialized_round = {
-            "Name": self.name,
-            "Start": self.start,
-            "End": self.end,
-            "Matches": self.matches,
+            "name": self.name,
+            "start": self.start,
+            "end": self.end,
+            "matches": self.matches,
         }
         return serialized_round
 
@@ -273,7 +272,7 @@ class Tournament:
         tournament_dict["rounds"] = Round.instantiate(tournament_dict["rounds"])
         participants_list = []
         for participant in tournament_dict["players"]:
-            new_participant = Player.instantiate(participant)
+            new_participant = Player(participant)
             participants_list.append(new_participant)
             tournament_dict["players"] = participants_list
 
@@ -299,7 +298,10 @@ class Tournament:
             lower_tier = self.players.copy()
             i = 0
 
-            new_round = Round(f"Tour {nb_round}", start=Round.time_now())
+            new_round = Round({"name": f"Tour {nb_round}",
+                                "start": Round.time_now(),
+                                "end": None,
+                                "matches": []})
             self.rounds.append(new_round)
             lower_tier = new_round.sort_players(lower_tier)
 
@@ -321,7 +323,10 @@ class Tournament:
             sorted = Round.sort_players(to_sort)
             i = 0
 
-            new_round = Round(f"Tour {nb_round}", start=Round.time_now())
+            new_round = Round({"name": f"Tour {nb_round}",
+                                "start": Round.time_now(),
+                                "end": None,
+                                "matches": []})
             list_matches = []
             print("LONGUEUR MATCHES (pré-ajout)")
             print(f"{new_round.matches}")
@@ -357,7 +362,7 @@ class Tournament:
         self.round_update()
 
         for match in current_round.matches:
-            match = Match.instantiate_match(match)
+            match = Match.instantiate_players(match)
 
     def round_update(self):
         Tournament = Query()
@@ -418,5 +423,5 @@ class Tournament:
 
     def ended(self):
         tournament_table.update(
-            {"Fini": "True"}, (Tournament["date"] == self.date)
+            {"ended": "True"}, (Tournament["date"] == self.date)
         )

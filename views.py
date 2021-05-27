@@ -305,7 +305,7 @@ class Rankings(Menu):
             print(f"\n{rounds['name'].upper()}")
             print(f"Début : {round['start']}")
             print(f"Fin : {round['end']}")
-            for match in round['match']:
+            for match in round["match"]:
                 player_one = f"{match[0][0]['first_name']} {match[0][0]['last_name']}"
                 score_one = f"{match[0][1]}"
                 player_two = f"{match[1][0]['first_name']} {match[1][0]['last_name']}"
@@ -402,12 +402,12 @@ class TournamentMenu(Menu):
             answer = input(Texts.end_menu).lower()
         return answer
 
-        for round in tournament['rounds']:
+        for round in tournament["rounds"]:
             i = 0
             print(f"\n{round['name'][0].upper()}")
             print(f"Début : {round['start']}")
             print(f"Durée : {round['end']}")
-            for match in round['matches']:
+            for match in round["matches"]:
                 player_one = f"{match[0][0]['first_name']} {match[0][0]['last_name']}"
                 score_one = f"{match[0][1]}"
                 player_two = f"{match[1][0]['first_name']} {match[1][0]['last_name']}"

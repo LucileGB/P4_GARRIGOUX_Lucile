@@ -1,8 +1,9 @@
 import sys
 
-from helper import CheckForm
 import models
 import views
+
+from helper import CheckForm
 
 """NB_PLAYERS sets the number of players per tournament.
 NB_ROUNDS sets the number of rounds per tournament."""
@@ -18,7 +19,6 @@ class TournamentControl:
     def create_tournament():
         models.Player.clear_participants()
         form = views.TournamentMenu.create_tournament()
-        # ADD VERIFICATION
         if form == "q":
             sys.exit()
         elif form == "r":

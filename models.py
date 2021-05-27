@@ -198,6 +198,7 @@ class Match:
 
     @staticmethod
     def compare(new_match, past_match):
+        """Compare whether a player instance in a match was in another match."""
         if Match.in_match(
             new_match[0][0], past_match[0][0], past_match[1][0]
         ) and Match.in_match(new_match[1][0], past_match[0][0], past_match[1][0]):
@@ -249,7 +250,8 @@ class Round:
 
     @staticmethod
     def instantiate(list_rounds):
-        """Instantiate all the rounds in a tournament."""
+        """Instantiate all the rounds in a tournament dictionary at once,
+        also instantiating the players in the match tuples they contains."""
         list_instances = []
 
         for dictionary in list_rounds:
@@ -275,6 +277,7 @@ class Round:
         return beginning
 
     def serialize(self):
+        """Return the matches in self.matches as a dictionary."""
         for match in self.matches:
             match_to_serialize = Match(match)
             match = match_to_serialize.serialize_match()
@@ -308,6 +311,8 @@ class Tournament:
 
     @staticmethod
     def instantiate(tournament_dict):
+        """Instantiate the players and the rounds in a tournament dictionary,
+        then return the updated dictionary as an instance."""
         tournament_dict["rounds"] = Round.instantiate(tournament_dict["rounds"])
         participants_list = []
         for participant in tournament_dict["players"]:
@@ -319,15 +324,16 @@ class Tournament:
 
     @staticmethod
     def return_last_tournament():
+        """Return the last tournament inscribed in the database as an
+        instance."""
         list_tournaments = tournament_table.all()
         last_tournament = Tournament.instantiate(list_tournaments[-1])
         return last_tournament
 
-    def add_player(self, Player):
-        self.players.append(Player)
-
     def round_start(self):
-        """Create the new round and its matches."""
+        """Create the new round and its matches. Since the first round
+        and the following one don't share the same matching algorythm,
+        it acts different depending on self.rounds length."""
         nb_round = len(self.rounds) + 1
 
         if len(self.rounds) == 0:
@@ -391,7 +397,7 @@ class Tournament:
             self.rounds.append(new_round)
 
     def round_end(self, results):
-        print(len(self.rounds))
+        """Updates the finished round instance and saves it in the database."""
         current_round = self.rounds[-1]
         i = 0
 
@@ -433,6 +439,7 @@ class Tournament:
         )
 
     def save(self):
+        """Insert a new tournament into the database."""
         list_rounds = []
         list_participants = []
         for round in self.rounds:

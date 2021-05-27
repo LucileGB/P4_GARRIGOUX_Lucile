@@ -399,7 +399,7 @@ class TournamentMenu(Menu):
                 print(f"Classement : {player['score']} points ({rank}ème place)")
             i += 1
         while Menu.input_ok(right_answers, answer) == False:
-            answer = input(Texts.rankings_players_rank).lower()
+            answer = input(Texts.end_menu).lower()
         return answer
 
         for round in tournament['rounds']:

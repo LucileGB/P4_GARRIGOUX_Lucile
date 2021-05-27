@@ -54,7 +54,9 @@ class TournamentControl:
         current_tournament = models.Tournament.return_last_tournament()
         while len(current_tournament.rounds) < NB_ROUNDS:
             TournamentControl.round_control()
-        current_tournament.ended()
+            current_tournament = models.Tournament.return_last_tournament()
+
+        current_tournament.set_ended()
 
         list_tournament = models.Tournament.all_tournaments()
         finished_tournament = list_tournament[-1]

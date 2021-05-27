@@ -456,5 +456,6 @@ class Tournament:
         }
         tournament_table.insert(serialized_tournament)
 
-    def ended(self):
+    def set_ended(self):
+        Tournament = Query()
         tournament_table.update({"ended": "True"}, (Tournament["date"] == self.date))

@@ -87,3 +87,6 @@ Q. Quitter\n"""
 Q. Quitter\n"""
     matches_instructions = """Entrer les résultats :
 1 si le joueur 1 a gagné, 2 si le joueur 2 a gagné, 3 pour un match nul.\n"""
+    end_menu = """\nVeuillez entrer le caractère correspondant à la sélection souhaitée.
+1. Retour à l'écran d'accueil
+Q. Quitter\n"""

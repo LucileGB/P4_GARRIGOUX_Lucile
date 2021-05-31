@@ -24,12 +24,11 @@ class TournamentControl:
         elif form == "r":
             MainControl.main()
         else:
-            right_date = CheckForm.check_date(form[2])
-            if CheckForm.check_date(form[2]) == False:
+            if CheckForm.check_date(form[2]) is False:
                 print("Erreur sur la date du tournoi.")
                 new_date = CheckForm.correct_date(form[2])
                 form[2] = new_date
-            if CheckForm.check_number(form[3]) == False:
+            if CheckForm.check_number(form[3]) is False:
                 print("Merci d'entrer un chiffre pour la durée du tournoi.")
                 form[3] == CheckForm.check_number(form[3])
             form[4] = CheckForm.control_time(form[4])
@@ -50,7 +49,6 @@ class TournamentControl:
 
     @staticmethod
     def run_tournament():
-        i = 0
         current_tournament = models.Tournament.return_last_tournament()
         while len(current_tournament.rounds) < NB_ROUNDS:
             TournamentControl.round_control()
@@ -89,7 +87,7 @@ class PlayerControl:
 
     def main():
         condition = False
-        while condition == False:
+        while condition is False:
             choice = views.PlayerMenu.main()
             if choice == "1":
                 if len(models.Player.list_not_participants()) == 0:
@@ -115,9 +113,9 @@ class PlayerControl:
                 sys.exit()
             elif selection == "r":
                 print("Menu quitté.\n")
-                is_on == False
+                is_on = False
                 MainControl.main()
-            elif selection[1].isnumeric() == False:
+            elif selection[1].isnumeric() is False:
                 print("Réponse invalide.")
             else:
                 player = models.Player(selection[0])
@@ -130,15 +128,14 @@ class PlayerControl:
         elif form == "q":
             sys.exit
         else:
-            right_date = CheckForm.check_date(form[2])
-            if CheckForm.check_date(form[2]) == False:
+            if CheckForm.check_date(form[2]) is False:
                 print("Champs date de naissance :")
                 new_date = CheckForm.correct_date(form[2])
                 form[2] = new_date
-            if CheckForm.check_gender(form[3]) == False:
+            if CheckForm.check_gender(form[3]) is False:
                 print("Champs genre :")
                 form[3] = CheckForm.check_gender(form[3])
-            if CheckForm.check_number(form[4]) == False:
+            if CheckForm.check_number(form[4]) is False:
                 print("Champs classement :")
                 form[4] = CheckForm.check_number(form[4])
 
@@ -153,7 +150,7 @@ class PlayerControl:
                     "is_playing": "False",
                 }
             )
-            if new_player.has_double() == True:
+            if new_player.has_double() is True:
                 print("Ce joueur existe déjà.\n")
                 views.PlayerMenu.main()
             else:
@@ -163,7 +160,7 @@ class PlayerControl:
 
     def select_players():
         is_on = True
-        while is_on == True and len(models.Player.list_participants()) < NB_PLAYERS:
+        while is_on and len(models.Player.list_participants()) < NB_PLAYERS:
             list_not_participant = models.Player.list_not_participants()
             selection = views.PlayerMenu.select_players(
                 models.Player.list_abridged(list_not_participant),
@@ -173,7 +170,7 @@ class PlayerControl:
                 sys.exit()
             elif selection == "r":
                 print("Menu quitté.\n")
-                is_on == False
+                is_on = False
                 PlayerControl.main()
             else:
                 selection = models.Player(selection)
@@ -211,7 +208,7 @@ class MainControl:
             MainControl.main_rankings()
 
         elif result == "u":
-            ControlPlayer.change_rank()
+            PlayerControl.change_rank()
         elif result == "q":
             sys.exit()
 

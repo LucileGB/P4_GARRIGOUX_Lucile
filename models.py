@@ -133,7 +133,7 @@ class Player:
     @staticmethod
     def final_ranking_list(tournament):
         participants = tournament.players
-        players = sorted(players, key=lambda Player: Player.score, reverse=True)
+        players = sorted(participants, key=lambda Player: Player.score, reverse=True)
         return players
 
 
@@ -214,7 +214,7 @@ class Match:
         i = 0
         for new_match in new_matches:
             for past_match in past_matches:
-                if Match.compare(new_match, past_match) == True:
+                if Match.compare(new_match, past_match) is True:
                     if i == len(new_matches) - 1:
                         pair_one = (
                             [new_matches[i][0][0], new_matches[i][0][1]],
@@ -249,7 +249,7 @@ class Round:
         self.matches = params["matches"]
 
     @staticmethod
-    def instantiate(list_rounds):
+    def instantiate_all(list_rounds):
         """Instantiate all the rounds in a tournament dictionary at once,
         also instantiating the players in the match tuples they contains."""
         list_instances = []
@@ -293,6 +293,11 @@ class Round:
 
 class Tournament:
     def __init__(self, params):
+        participants_list = []
+        for participant in params["players"]:
+            new_participant = Player(participant)
+            participants_list.append(new_participant)
+
         self.name = params["name"]
         self.place = params["place"]
         self.date = params["date"]
@@ -300,8 +305,8 @@ class Tournament:
         self.time_control = params["time_control"]
         self.description = params["description"]
         self.nb_rounds = params["nb_rounds"]
-        self.rounds = params["rounds"]
-        self.players = params["players"]
+        self.rounds = Round.instantiate_all(params["rounds"])
+        self.players = participants_list
         self.ended = params["ended"]
 
     @staticmethod
@@ -310,24 +315,11 @@ class Tournament:
         return list_tournament
 
     @staticmethod
-    def instantiate(tournament_dict):
-        """Instantiate the players and the rounds in a tournament dictionary,
-        then return the updated dictionary as an instance."""
-        tournament_dict["rounds"] = Round.instantiate(tournament_dict["rounds"])
-        participants_list = []
-        for participant in tournament_dict["players"]:
-            new_participant = Player(participant)
-            participants_list.append(new_participant)
-            tournament_dict["players"] = participants_list
-
-        return Tournament(tournament_dict)
-
-    @staticmethod
     def return_last_tournament():
         """Return the last tournament inscribed in the database as an
         instance."""
         list_tournaments = tournament_table.all()
-        last_tournament = Tournament.instantiate(list_tournaments[-1])
+        last_tournament = Tournament(list_tournaments[-1])
         return last_tournament
 
     def round_start(self):

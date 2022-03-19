@@ -1,7 +1,65 @@
 # P4_GARRIGOUX_Lucile
-Application de gestion pour un club d'échec
+Management application for a chess tournament. French and English version available.
 
-## FONCTIONNALITES
+La documentation en français est disponible plus bas dans le ReadMe.
+
+## ENGLISH - Introduction
+
+This application helps managing a chess tournament according to the Swiss method.
+
+It allows the user to launch a 4-rounds tournament for 8 participants, automatically matching players according to their rankings. You can stop the application at any time during the tournament and resume later.
+
+You can consult the database whenever you wish to see players profiles and past tournaments.
+
+
+## Installation
+
+#(Optional) Virtual environment installation
+
+You can install a virtual environment so as to keep any library installation contained in it. First, navigate with the command line up to the folder where you want to keep your virtual environment. Type the following command:
+
+> python -m venv venv
+
+Then activate your virtual environment by typing the following:
+
+**For Windows :**
+> venv\Scripts\activate
+
+**For Max or Linux :**
+> source .venv/bin/activate
+
+You will see that that the prefix on your console has changed, for instance like below:
+
+> C:\Users\LucileGB\Document\Projet 4>
+
+> (venv) C:\Users\LucileGB\Document\Projet 4>
+
+You are now in your virtual environment. To deactivate it once you're done running the app, just type deactivate.
+
+# Install the relevant libraries
+
+To install the necessary libraries, use the command line to navigate in the application folder and type the following:
+
+> pip install -r requirements.txt
+
+## Usage
+Once the installation is finished, navigate to the folder and launch the application by typing the following in the command line:
+
+**For Mac or Windows :**
+> main.py
+
+**For Linux :**
+> ./main
+
+## Run linting report
+To generate a flake8 report on code cleanliness, enter the following command:
+
+> flake8 chemin\vers\le\dossier\de\l'application --format=html --htmldir=flake-report
+
+Please note that the content of requirements.txt must have already been installed.
+
+
+## FRANCAIS - Présentation
 
 Cet outil permet de gérer des tournois d'échecs selon la méthode des tournois suisses.
 
@@ -31,7 +89,7 @@ Vous constaterez que le préfixe de votre ligne de commande a changé, par exemp
 
 > (venv) C:\Users\LucileGB\Document\Projet 4>
 
-Votre environnement virtuel est maintenant activé.
+Vous êtes maintenant dans votre environnement virtuel. Pour le désactiver, tapez simplement "deactivate" dans la console.
 
 # Installer les paquets nécessaires
 
@@ -50,9 +108,9 @@ Une fois l'installation finie, naviguez jusqu'au dossier où vous avez installé
 **Pour Linux :**
 > ./main
 
-## Vérifier l'intégrité du code
-Pour générer un rapport flake8 sur l'intégrité du code, entrez la commande suivante :
+## Générer un rapport sur la qualité du code
+Pour générer un rapport flake8, entrez la commande suivante :
 
 > flake8 chemin\vers\le\dossier\de\l'application --format=html --htmldir=flake-report
 
-Veuillez noter que le fichier requirements.txt doit déjà avoir été installé.
+Veuillez noter que le contenu de requirements.txt doit déjà avoir été installé.

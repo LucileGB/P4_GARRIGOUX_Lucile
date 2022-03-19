@@ -5,38 +5,37 @@ Application de gestion pour un club d'échec
 
 Cet outil permet de gérer des tournois d'échecs selon la méthode des tournois suisses.
 
-Il permet de lancer un tournoi de 4 rounds pour 8 joueurs. Il est possible de l'interrompre et reprendre un tournoi après coup.
+Il permet de lancer un tournoi de 4 rounds pour 8 joueurs, en appariant automatiquement les joueurs à chaque round selon leur classement. Il est possible d'interrompre le programme à mi-tournoi et de reprendre ultérieurement.
 
-Il gère une base de donnée de joueurs et de tournois passés.
-
+Il est possible à tout moment de consulter la base de données, qui liste les joueurs et les tournois passés.
 
 ## Installation
 
-(Optionnel) Installer un environnement virtuel
+#(Optionnel) Installer un environnement virtuel
 
-Si désiré, vous pouvez installer un environnement virtuel pour faire fonctionner le programme. Tout d'abord, utilisez la console pour naviguer vers le dossier où vous voulez lancer votre environnement virtuel (ainsi que l'application) et tapez la commande suivante :
+Vous pouvez installer un environnement virtuel afin d'y cantonner toute installation de paquet. Tout d'abord, utilisez la console pour naviguer vers le dossier où vous voulez lancer votre environnement virtuel et tapez la commande suivante :
 
-python -m venv ./venv
+> python -m venv venv
 
 Puis activez votre environnement virtuel en tapant la commande suivante :
 
 **Pour Windows :**
-> .\Scripts\activate.bat
+> venv\Scripts\activate
 
 **Pour Max ou Linux :**
-> source ./bin/activate
+> source .venv/bin/activate
 
 Vous constaterez que le préfixe de votre ligne de commande a changé, par exemple comme ceci :
 
-> C:\Users\LG\Documents\Projet 4> venv\Scripts\activate
+> C:\Users\LucileGB\Document\Projet 4>
 
-> (scraper) C:\Users\LG\Projet 4>
+> (venv) C:\Users\LucileGB\Document\Projet 4>
 
-Votre environnement virtuel est maintenant activé. Toute installation de paquet se fera dans cet environnement.
+Votre environnement virtuel est maintenant activé.
 
-## Installer les paquets nécessaires
+# Installer les paquets nécessaires
 
-Pour installer les paquets nécessaires, utilisez la console pour naviguer jusqu'au dossier où vous avez téléchargé l'application et son document requirement.txt. Tapez les instructions suivantes dans la console :
+Pour installer les paquets nécessaires, utilisez la console pour naviguer dans le dossier de l'application et tapez l'instruction suivante :
 
 > pip install -r requirements.txt
 
@@ -56,4 +55,4 @@ Pour générer un rapport flake8 sur l'intégrité du code, entrez la commande s
 
 > flake8 chemin\vers\le\dossier\de\l'application --format=html --htmldir=flake-report
 
-Veuillez noter que le fichier requirement doit déjà avoir été installé.
+Veuillez noter que le fichier requirements.txt doit déjà avoir été installé.

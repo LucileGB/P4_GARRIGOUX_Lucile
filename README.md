@@ -43,7 +43,7 @@ Pour installer les paquets nécessaires, utilisez la console pour naviguer jusqu
 Pip installera alors les paquets nécessaires.
 
 ## Usage
-Une fois l'installation finie, vous pouvez lancer l'application en tapant la commande suivante dans la console :
+Une fois l'installation finie, naviguez jusqu'au dossier où vous avez installé l'application. Vous pouvez alors la lancer en tapant la commande suivante dans la console :
 
 **Pour Mac ou Windows :**
 > main.py
@@ -51,3 +51,9 @@ Une fois l'installation finie, vous pouvez lancer l'application en tapant la com
 **Pour Linux :**
 > ./main
 
+## Vérifier l'intégrité du code
+Pour générer un rapport flake8 sur l'intégrité du code, entrez la commande suivante :
+
+> flake8 chemin\vers\le\dossier\de\l'application --format=html --htmldir=flake-report
+
+Veuillez noter que le fichier requirement doit déjà avoir été installé.

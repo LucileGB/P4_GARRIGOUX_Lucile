@@ -312,3 +312,7 @@ class MainControl:
             MainControl.tournament_rankings(tournament)
         elif choice == "q":
             sys.exit()
+
+class LanguageControl:
+    def valid_name(input):
+        valid_name = ["english", "français", "francais"]

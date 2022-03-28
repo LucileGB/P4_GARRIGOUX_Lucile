@@ -458,3 +458,7 @@ class Tournament:
     def set_ended(self):
         Tournament = Query()
         tournament_table.update({"ended": "True"}, (Tournament["date"] == self.date))
+
+class Language:
+    def __init__(self, name):
+        self.name = name

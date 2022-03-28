@@ -1,5 +1,5 @@
 # P4_GARRIGOUX_Lucile
-Management application for a chess tournament. French and English version available.
+Management application for a chess tournament, following the MVC (Model-View-Controller) model. French and English version available.
 
 La documentation en français est disponible plus bas dans le ReadMe.
 

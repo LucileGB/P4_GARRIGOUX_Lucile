@@ -1,7 +1,45 @@
+import gettext
+
 from texts import Texts
 
+gettext.install("P4", "/locale")
 
-class Menu:
+
+class InputMenu:
+    def __init__(self, answers, interrupts=["r", "q"]):
+        self.interrupts = interrupts
+        self.answers = answers
+
+    def validate(self, answer):
+        answer = answer.lower()
+        if answer in self.interrupts or answer in self.answers:
+            return answer
+        else:
+            return False
+
+    def is_interrupt(self, answer):
+        if answer.lower() in self.interrupts:
+            return answer
+
+    def ask_input(self, prompt=None):
+        answer = "placeholder"
+
+        if prompt:
+            print(prompt)
+
+        while self.validate(answer) is False:
+            answer = input(_("Réponse : "))
+
+        return answer
+
+
+class MainMenu(InputMenu):
+    def main(self):
+        answer = self.ask_input(prompt=Texts.main_menu)
+
+        return answer
+
+class Menu(InputMenu):
     @staticmethod
     def change_form(field_list=[]):
         """Take care of swapping one selected article in a list of answers
@@ -59,6 +97,7 @@ class Menu:
 
     @staticmethod
     def yes_no():
+        # Devrait être adaptable en InputMenu
         answers = ["o", "n"]
         answer = ""
         while Menu.input_ok(answers, answer) is False:
@@ -74,17 +113,6 @@ class Menu:
         for field in fields:
             print(f"{fields[i]}{answers[i]}")
             i += 1
-
-
-class MainMenu(Menu):
-    @staticmethod
-    def main():
-        inputs = ["n", "c", "m", "r", "q"]
-        answer = ""
-        while Menu.input_ok(inputs, answer) is False:
-            print(Texts.welcome_text)
-            answer = input("Votre choix : ").lower()
-        return answer
 
 
 class PlayerMenu(Menu):

@@ -1,7 +1,12 @@
+import argparse
+import gettext
+
 import controllers
 import models
-import argparse
 
+
+#english = gettext.translation('P4', languages=['en'])
+gettext.install("P4", "/locale")
 
 def is_first_test():
     """Quick and dirty database initialization for a test run."""

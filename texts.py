@@ -1,12 +1,16 @@
+import gettext
+
+gettext.install("P4", "/locale")
+
 class Texts:
-    welcome_text = """Bienvenue !
+    main_menu = _("""Bienvenue !
 Veuillez taper la lettre correspondant à l'une des options suivantes :
 N. Créer un nouveau tournoi ;
 C. Continuer un tournoi en cours ;
 R. Consulter les rapports (classements de joueurs, tournois passés...) ;
 U. Changer directement les classements des joueurs
 Q. Quitter.
-"""
+""")
     menu_tournament = """CREATION DE TOURNOI\n
 Vous pouvez quitter à tout moment en tapant Q.
 Vous pouvez revenir à l'écran d'accueil en tapant R.

@@ -188,7 +188,9 @@ class MainControl:
         self.player_control = PlayerControl()
 
     def main():
-        result = views.MainMenu.main().lower()
+        testMain = views.MainMenu(answers=["n", "c", "r", "u"], interrupts=["q"])
+        result = testMain.main()
+
         if result == "n":
             MainControl.create_tournament()
 

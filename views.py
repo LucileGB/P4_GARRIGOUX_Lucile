@@ -6,38 +6,27 @@ gettext.install("P4", "/locale")
 
 
 class InputMenu:
-    def __init__(self, answers, interrupts=["r", "q"]):
+    def __init__(self, interrupts=["r", "q"]):
         self.interrupts = interrupts
-        self.answers = answers
 
-    def validate(self, answer):
+    def validate(self, answer, right_answers):
         answer = answer.lower()
-        if answer in self.interrupts or answer in self.answers:
-            return answer
+        if answer in self.interrupts or answer in right_answers:
+            return True
         else:
             return False
 
-    def is_interrupt(self, answer):
-        if answer.lower() in self.interrupts:
-            return answer
-
-    def ask_input(self, prompt=None):
+    def ask_input(self, right_answers, prompt=None):
         answer = "placeholder"
 
         if prompt:
             print(prompt)
 
-        while self.validate(answer) is False:
+        while self.validate(answer, right_answers) is False:
             answer = input(_("Réponse : "))
 
         return answer
 
-
-class MainMenu(InputMenu):
-    def main(self):
-        answer = self.ask_input(prompt=Texts.main_menu)
-
-        return answer
 
 class Menu(InputMenu):
     @staticmethod
@@ -208,24 +197,7 @@ class PlayerMenu(Menu):
                     return result
 
 
-class Rankings(Menu):
-    @staticmethod
-    def main():
-        right_answers = ["1", "2", "r", "q"]
-        answer = ""
-        while Menu.input_ok(right_answers, answer) is False:
-            answer = input(Texts.rankings_main).lower()
-        return answer
-
-    @staticmethod
-    def ranking_players():
-        """Main menu to access player rankings."""
-        right_answers = ["1", "2", "3", "q"]
-        answer = ""
-        while Menu.input_ok(right_answers, answer) is False:
-            answer = input(Texts.rankings_players).lower()
-        return answer
-
+class Rankings(InputMenu):
     @staticmethod
     def show_list(list_players):
         """Prints a list to be used in player ranking menus."""
@@ -246,27 +218,26 @@ class Rankings(Menu):
                 print(f"Classement : {player['rank']} points ({rank}ème place)")
             i += 1
 
-    @staticmethod
-    def ranking_players_alpha(list_players):
+    def ranking_players_alpha(self, list_players):
+        #TODO : simplify this!
         """Shows the player list in alphabetical order."""
-        right_answers = ["1", "2", "q"]
-        answer = ""
         print("JOUEURS PAR ORDRE ALPHABETIQUE\n")
         Rankings.show_list(list_players)
 
-        while Menu.input_ok(right_answers, answer) is False:
-            answer = input(Texts.rankings_players_alpha).lower()
+        answer = self.ask_input(right_answers=["1", "2"],
+                    prompt=Texts.rankings_players_alpha)
+
         return answer
 
     @staticmethod
     def ranking_players_rank(list_players):
         """Shows the player list per rankings."""
-        right_answers = ["1", "2", "q"]
-        answer = ""
         print("JOUEURS PAR CLASSEMENT\n")
         Rankings.show_list(list_players)
-        while Menu.input_ok(right_answers, answer) is False:
-            answer = input(Texts.rankings_players_rank).lower()
+
+        answer = self.ask_input(right_answers=["1", "2"],
+                    prompt=Texts.rankings_players_rank)
+
         return answer
 
     @staticmethod

@@ -2,6 +2,9 @@ import gettext
 
 gettext.install("P4", "/locale")
 
+# Unifier mention R/Q
+
+
 class Texts:
     main_menu = _("""Bienvenue !
 Veuillez taper la lettre correspondant à l'une des options suivantes :
@@ -67,7 +70,7 @@ Pour retourner au menu principal, tapez R.\n
 Veuillez entrer le chiffre correspondant à la sélection souhaitée.
 1. Liste par ordre alphabétique
 2. Liste par classement
-3. Retour à l'écran précédent
+R. Retour à l'écran précédent
 Q. Quitter\n"""
     rankings_players_alpha = """\nVeuillez entrer le chiffre correspondant à la sélection souhaitée.
 1. Liste par classement

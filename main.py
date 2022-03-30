@@ -39,4 +39,5 @@ def is_first_test():
 
 if __name__ == "__main__":
     is_first_test()
-    controllers.MainControl.main()
+    app = controllers.MainControl()
+    app.main()

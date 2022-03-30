@@ -101,7 +101,7 @@ class Player:
         showing only each player's complete name and birthdate. Also return
         the alphabetically sorted list."""
         i = 0
-        abridged_list = Player.alphabetical_list(list_to_abridge)
+        abridged_list = Player.alphabetical(list_to_abridge)
         for player in abridged_list:
             attributes = list(player.values())
             print(f"\n{i+1}. {attributes[0]} {attributes[1].upper()}")
@@ -122,7 +122,7 @@ class Player:
         return result
 
     @staticmethod
-    def alphabetical_list(unsorted):
+    def alphabetical(unsorted):
         return sorted(unsorted, key=lambda value: value["last_name"])
 
     @staticmethod
@@ -316,15 +316,35 @@ class Tournament:
 
     @staticmethod
     def return_last_tournament():
-        """Return the last tournament inscribed in the database as an
-        instance."""
+        """Tries to return the last tournament inscribed in the database as an
+        instance.
+        If there are none, returns False."""
         list_tournaments = tournament_table.all()
-        last_tournament = Tournament(list_tournaments[-1])
-        return last_tournament
+
+        if len(list_tournaments) == 0:
+            return False
+        else:
+            last_tournament = Tournament(list_tournaments[-1])
+            return last_tournament
+
+    @staticmethod
+    def return_ongoing_tournament():
+        """Tries returning the last ongoing tournament or returns false (if
+        last_tournament.end == False fails, it means there is no tournament
+        in the database.)"""
+        last_tournament = Tournament.return_last_tournament()
+
+        try:
+            if last_tournament.ended == "False":
+                return last_tournament
+        except:
+            return False
+
+        return False
 
     def round_start(self):
         """Create the new round and its matches. Since the first round
-        and the following one don't share the same matching algorythm,
+        and the following one don't share the same matching algorithm,
         it acts different depending on self.rounds length."""
         nb_round = len(self.rounds) + 1
 

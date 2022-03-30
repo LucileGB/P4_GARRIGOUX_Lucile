@@ -218,7 +218,7 @@ class Rankings(InputMenu):
                 print(f"Classement : {player['rank']} points ({rank}ème place)")
             i += 1
 
-    def ranking_players_alpha(self, list_players):
+    def players_alpha(self, list_players):
         #TODO : simplify this!
         """Shows the player list in alphabetical order."""
         print("JOUEURS PAR ORDRE ALPHABETIQUE\n")
@@ -229,8 +229,7 @@ class Rankings(InputMenu):
 
         return answer
 
-    @staticmethod
-    def ranking_players_rank(list_players):
+    def players_rank(self, list_players):
         """Shows the player list per rankings."""
         print("JOUEURS PAR CLASSEMENT\n")
         Rankings.show_list(list_players)
@@ -240,8 +239,7 @@ class Rankings(InputMenu):
 
         return answer
 
-    @staticmethod
-    def ranking_tournaments(list_tournament):
+    def ranking_tournaments(self, list_tournament):
         """Shows a list of all tournaments."""
         right_answers = ["r", "q"]
         nb_tournaments = len(list_tournament)
@@ -321,9 +319,11 @@ class Rankings(InputMenu):
 
 class TournamentMenu(Menu):
     @staticmethod
-    def create_tournament():
+    def create_tournament(from_c=False):
         """Accepts input for the tournament creation form. If R or Q is typed,
-        returns this input immediately."""
+        returns this input immediately.
+        If accessed from the 'c' command, which correspond to 'continue', prints
+        a warning that there was no ongoing tournament."""
         form_tournament = [
             "Nom : ",
             "Adresse : ",
@@ -332,6 +332,9 @@ class TournamentMenu(Menu):
             "Contrôle de temps :\n1. Bullet\n2. Blitz\n3. Coup rapide\n",
             "Notes ou descriptions : ",
         ]
+
+        if from_c == True:
+            print("* Aucun tournoi en cours ! Vous pouvez créer un nouveau tournoi ci-dessous : * \n\n")
 
         print(Texts.menu_tournament)
         results = Menu.fill_form(form_tournament)

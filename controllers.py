@@ -32,6 +32,48 @@ def process_answer(answer,
         sys.exit()
 
 
+class MainControl:
+    def __init__(self):
+        self.tournament_menu = views.TournamentMenu()
+        self.rankings = RankingControl()
+        #self.players_models = models.Player()
+        #self.tournament_models = models.Tournament()
+        #self.tournament_control = TournamentControl()
+        #self.player_control = PlayerControl()
+
+    def main(self):
+        answers=["n", "c", "ra", "u"]
+        answers_values=[self.create_tournament,
+                self.ongoing_tournament,
+                self.rankings.main,
+                PlayerControl.change_rank]
+        actions_dict = dict(zip(answers, answers_values))
+        menu = views.InputMenu(interrupts=["q"])
+        answer = menu.ask_input(right_answers=answers,
+                                prompt=Texts.main_menu,
+                                )
+
+        process_answer(answer, actions=actions_dict)
+
+    def create_tournament(self):
+        tournament_instance = TournamentControl.create_tournament()
+        while len(models.Player.list_participants()) < NB_PLAYERS:
+            PlayerControl.main()
+        for player_dict in models.Player.list_participants():
+            player = models.Player(player_dict)
+            tournament_instance.players.append(player)
+        tournament_instance.save()
+        TournamentControl.run_tournament()
+
+    def ongoing_tournament(self):
+        tournament = models.Tournament.return_ongoing_tournament()
+
+        if tournament == False:
+            self.tournament_menu.create_tournament(from_c=True)
+        else:
+            TournamentControl.run_tournament()
+
+
 class TournamentControl:
     def __init__(self):
         self.tournament_menu = views.TournamentMenu()
@@ -198,111 +240,75 @@ class PlayerControl:
                 selection.is_playing_true()
 
 
-class MainControl:
+class RankingControl:
     def __init__(self):
-        self.tournament_menu = views.TournamentMenu()
-        self.rankings_menu = views.InputMenu()
-        #self.players_models = models.Player()
-        #self.tournament_models = models.Tournament()
-        #self.tournament_control = TournamentControl()
-        #self.player_control = PlayerControl()
+        self.menu = views.Rankings()
+
 
     def main(self):
-        answers=["n", "c", "ra", "u"]
-        answers_values=[self.create_tournament,
-                print,
-                self.main_rankings,
-                PlayerControl.change_rank]
+        answers = ["1", "2"]
+        answers_values = [self.players, self.tournaments]
         actions_dict = dict(zip(answers, answers_values))
-        menu = views.InputMenu(interrupts=["q"])
-        answer = menu.ask_input(right_answers=answers,
-                                prompt=Texts.main_menu,
-                                )
-
-        process_answer(answer, actions=actions_dict)
-
-        if answer == "c":
-            #TODO: ranger cette fonction (views, models)
-            if len(models.Tournament.all_tournaments()) == 0:
-                print("Aucun tournoi en cours ! Veuillez créer un tournoi.")
-                MainControl.create_tournament()
-            else:
-                last_tournament = models.Tournament.return_last_tournament()
-                if last_tournament.ended == "True":
-                    print("Aucun tournoi en cours ! Veuillez créer un tournoi.")
-                    MainControl.create_tournament()
-                else:
-                    TournamentControl.run_tournament()
-
-#        elif result == "q":
-#            sys.exit()
-
-    def create_tournament():
-        tournament_instance = TournamentControl.create_tournament()
-        while len(models.Player.list_participants()) < NB_PLAYERS:
-            PlayerControl.main()
-        for player_dict in models.Player.list_participants():
-            player = models.Player(player_dict)
-            tournament_instance.players.append(player)
-        tournament_instance.save()
-        TournamentControl.run_tournament()
-
-    def main_rankings(self):
-        answer = self.rankings_menu.ask_input(right_answers=["1", "2"],
+        answer = self.menu.ask_input(right_answers=answers,
                                 prompt=Texts.rankings_main)
+
+        process_answer(answer, actions=actions_dict, previous_view=self.main)
+
+
+    def players(self):
+        answers = ["1", "2"]
+        answers_values = [self.players_alpha, self.players_ranked]
+        actions_dict = dict(zip(answers, answers_values))
+        answer = self.menu.ask_input(right_answers=["1", "2"],
+                                prompt=Texts.rankings_players)
+
+        process_answer(answer,
+                    actions=actions_dict,
+                    previous_view=self.main)
+
+    def return_players(self, tournament=None):
+        #TODO : might be more appropriate in a "ranking" model class
+        """Returns a list of players."""
+        if tournament == None:
+            players = models.Player.all()
+        else:
+            players = tournament["players"]
+
+        return players
+
+    def players_alpha(self, tournament=None):
+        players = self.return_players(tournament)
+        players = models.Player.alphabetical(players)
+
+        answer = self.menu.players_alpha(list_alpha)
         if answer == "1":
-            self.player_rankings()
+            self.players_ranked()
         elif answer == "2":
-            MainControl.tournaments_rankings()
-        elif answer == "r":
+            self.main()
+        elif answer == "q":
+            sys.exit()
+
+    def players_ranked(self):
+        list_ranked = models.Player.rank_list()
+        answer = views.Rankings.players_rank(list_ranked)
+        if answer == "1":
+            MainControl.players_alpha(list_ranked)
+        elif answer == "2":
             MainControl.main()
         elif answer == "q":
             sys.exit()
 
-    def player_rankings(self):
-        list_all = models.Player.all()
-        answer = self.rankings_menu.ask_input(right_answers=["1", "2"],
-                                prompt=Texts.rankings_players)
-        if answer == "1":
-            self.player_rankings_alpha(list_all)
-        elif answer == "2":
-            self.player_rankings_rank()
-        elif answer == "r":
-            self.main_rankings()
-        elif answer == "q":
-            sys.exit
-
-    def player_rankings_alpha(self, list_all):
-        list_alpha = models.Player.alphabetical_list(list_all)
-        answer = views.Rankings.ranking_players_alpha(list_alpha)
-        if answer == "1":
-            self.player_rankings_rank()
-        elif answer == "2":
-            self.main_rankings()
-        elif answer == "q":
-            sys.exit()
-
-    def player_rankings_rank(self):
-        list_ranked = models.Player.rank_list()
-        answer = views.Rankings.ranking_players_rank(list_ranked)
-        if answer == "1":
-            MainControl.player_rankings_alpha(list_ranked)
-        elif answer == "2":
-            MainControl.main_rankings()
-        elif answer == "q":
-            sys.exit()
-
-    def tournaments_rankings():
+    def tournaments(self):
         list_tournament = models.Tournament.all_tournaments()
-        choice = views.Rankings.ranking_tournaments(list_tournament)
-        if choice == "r":
-            MainControl.main_rankings()
-        elif choice == "q":
+        answer = views.Rankings.ranking_tournaments(list_tournament)
+        if answer == "r":
+            self.main()
+        elif answer == "q":
             sys.exit()
         else:
-            MainControl.tournament_rankings(list_tournament[choice - 1])
+            self.tournament_rankings(list_tournament[choice - 1])
 
-    def tournament_rankings(tournament):
+    def tournament_rankings(self, tournament):
         choice = views.Rankings.ranking_tournament(tournament)
         if choice == "1":
             MainControl.participants_alpha(tournament)
@@ -311,12 +317,12 @@ class MainControl:
         elif choice == "3":
             MainControl.rounds_rankings(tournament)
         elif choice == "4":
-            MainControl.tournaments_rankings()
+            MainControl.tournaments()
         elif choice == "q":
             sys.exit()
 
     def participants_alpha(tournament):
-        choice = views.Rankings.ranking_players_alpha(tournament["players"])
+        choice = views.Rankings.players_alpha(tournament["players"])
         if choice == "1":
             MainControl.participants_by_rank(tournament)
         elif choice == "2":
@@ -325,7 +331,7 @@ class MainControl:
             sys.exit()
 
     def participants_by_rank(tournament):
-        choice = views.Rankings.ranking_players_rank(tournament["players"])
+        choice = views.Rankings.players_rank(tournament["players"])
         if choice == "1":
             MainControl.participants_alpha(tournament)
         elif choice == "2":
@@ -334,11 +340,10 @@ class MainControl:
             sys.exit()
 
     def rounds_rankings(tournament):
-        choice = views.Rankings.ranking_rounds(tournament)
-        if choice == "1":
-            MainControl.tournament_rankings(tournament)
-        elif choice == "q":
-            sys.exit()
+        answer = views.Rankings.ranking_rounds(tournament)
+        process_answer(answer,
+                    previous_view=self.tournament_rankings(tournament)
+                    )
 
 
 class LanguageControl:

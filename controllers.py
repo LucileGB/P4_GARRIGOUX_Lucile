@@ -11,12 +11,9 @@ NB_PLAYERS = 8
 NB_ROUNDS = 4
 
 
-def process_answer(answer,
-                previous_view=None,
-                actions=None):
+def process_answer(answer, previous_view=None, actions=None):
     """
-    Takes a user answer, an 'actions' dictionary and optionally a previous view.
-    If answer is an 'actions' key, execute the corresponding value function.
+    Processes a user answer to execute the corresponding function.
     """
     answer = answer.lower()
 
@@ -247,7 +244,7 @@ class RankingControl:
 
     def main(self):
         answers = ["1", "2"]
-        answers_values = [self.players, self.tournaments]
+        answers_values = [self.players, self.tournaments_list]
         actions_dict = dict(zip(answers, answers_values))
         answer = self.menu.ask_input(right_answers=answers,
                                 prompt=TextsRanking.main)
@@ -264,7 +261,7 @@ class RankingControl:
         players = models.Player.all()
         answers = ["a", "s"]
 
-        answer = self.menu.ask_input(right_answers=["a", "s"],
+        answer = self.menu.ask_input(right_answers=answers,
                                 prompt=TextsRanking.players).lower()
 
         if answer in answers:
@@ -278,21 +275,21 @@ class RankingControl:
         format answers to itself. As long as Q or R aren't pressed, the function
         remains active.
 
-        As process_answer can't take class methods with arguments, we have to
-        use this setup for the alphabetical/ranking order switch.
+        As process_answer doesn't take class methods with arguments, we use
+        this setup for the alphabetical/ranking order switch.
         """
         #TODO: tournament argument?
         answer = answer.lower()
 
         if answer == "a":
             list_alpha = models.Player.alphabetical(players)
-            answer = self.menu.players_details(
+            answer = self.menu.players_sorted(
                                 "JOUEURS PAR ORDRE ALPHABETIQUE\n",
                                 list_alpha)
         elif answer == "s":
             #TODO : add an argument to rank_list to harmonize if want to streamline?
             list_ranked = models.Player.rank_list()
-            answer = self.menu.players_details(
+            answer = self.menu.players_sorted(
                                 "JOUEURS PAR SCORE\n",
                                 list_ranked)
 
@@ -301,52 +298,67 @@ class RankingControl:
 
         self.display_players_list(answer, players)
 
-    def tournaments(self):
+
+    def tournaments_list(self):
         list_tournaments = models.Tournament.all_tournaments()
         answer = self.menu.tournaments_list(list_tournaments)
 
         if answer not in ["r", "q"]:
-            self.tournament_rankings(list_tournament[answer - 1])
+            self.tournament(list_tournaments[answer - 1])
         else:
             process_answer(answer, previous_view=self.main)
 
 
-    def tournament_rankings(self, tournament):
-        choice = self.menu.tournament(tournament)
-        if choice == "1":
-            MainControl.participants_alpha(tournament)
-        elif choice == "2":
-            MainControl.participants_by_rank(tournament)
-        elif choice == "3":
-            MainControl.rounds_rankings(tournament)
-        elif choice == "4":
-            MainControl.tournaments()
-        elif choice == "q":
-            sys.exit()
+    def tournament(self, tournament):
+        players = models.Player.all()
+        answers = ["a", "s", "d"]
 
-    def participants_alpha(tournament):
-        choice = views.Rankings.players_alpha(tournament["players"])
-        if choice == "1":
-            MainControl.participants_by_rank(tournament)
-        elif choice == "2":
-            MainControl.tournament_rankings(tournament)
-        else:
-            sys.exit()
+        answer = self.menu.ask_input(right_answers=answers,
+                                prompt=TextsRanking.tournament).lower()
 
-    def participants_by_rank(tournament):
-        choice = views.Rankings.players_rank(tournament["players"])
-        if choice == "1":
-            MainControl.participants_alpha(tournament)
-        elif choice == "2":
-            MainControl.tournament_rankings(tournament)
-        else:
-            sys.exit()
+        if answer in answers:
+            answer = self.display_tournament_detail(tournament, answer)
 
-    def rounds_rankings(tournament):
-        answer = views.Rankings.ranking_rounds(tournament)
-        process_answer(answer,
-                    previous_view=self.tournament_rankings(tournament)
-                    )
+        process_answer(answer, previous_view=self.tournaments_list)
+
+
+    def display_tournament_detail(self, tournament, answer):
+        """
+        We lower() answer because this function is recursive and needs to
+        format answers to itself. As long as Q or R aren't pressed, the function
+        remains active.
+
+        As process_answer doesn't take class methods with arguments, we use
+        this setup.
+        """
+        #TODO: tournament argument?
+        answer = answer.lower()
+
+        if answer == "a":
+            list_alpha = models.Player.alphabetical(tournament["players"])
+            answer = self.menu.players_sorted(
+                                "JOUEURS PAR ORDRE ALPHABETIQUE\n",
+                                list_alpha)
+        elif answer == "s":
+            #TODO : add an argument to rank_list to harmonize if want to streamline?
+            list_ranked = models.Player.score_list(tournament)
+            answer = self.menu.players_sorted(
+                                "JOUEURS PAR SCORE\n",
+                                list_ranked)
+
+        elif answer == "d":
+            answer = self.all_rounds(tournament)
+
+        elif answer in ["r", "q"]:
+            process_answer(answer, previous_view=self.tournaments_list)
+
+        self.display_tournament_detail(tournament, answer)
+
+
+    def all_rounds(self, tournament):
+        answer = self.menu.rounds(tournament)
+
+        return answer
 
 
 class LanguageControl:

@@ -1,6 +1,6 @@
 import gettext
 
-from utils.texts import Texts, TextsRanking
+from utils.texts import Texts, TextsRanking, TextsModels
 
 gettext.install("P4", "/locale")
 
@@ -27,6 +27,14 @@ class InputMenu:
 
         return answer
 
+class DisplayMenu:
+    def display_tournament(self, tournament):
+        form = TextsModels.tournament_form
+        attributes = list(tournament.values())
+        tournament_dict = dict(zip(form, attributes))
+
+        for key, value in tournament_dict.items():
+            print(f"{key} {value}")
 
 class Menu(InputMenu):
     @staticmethod
@@ -98,6 +106,7 @@ class Menu(InputMenu):
 
     @staticmethod
     def print_results(fields, answers):
+        # dict et zip
         i = 0
         for field in fields:
             print(f"{fields[i]}{answers[i]}")
@@ -115,20 +124,14 @@ class PlayerMenu(Menu):
     def create_player():
         """Returns inputs from the player creation forms. If R or Q are typed,
         interrupts the process and returns them immediately."""
-        form_players = [
-            "Prénom : ",
-            "Nom de famille : ",
-            "Date de naissance (format : jour/mois/année) : ",
-            "Genre (homme/femme): ",
-            "Classement (nombre total de points): ",
-        ]
+        form = TextsModels.player_form
         print(Texts.menu_create_player)
-        results = Menu.fill_form(form_players)
+        results = Menu.fill_form(form)
         if results == "r":
             return "r"
         if results == "q":
             return "q"
-        PlayerMenu.print_results(form_players, results)
+        PlayerMenu.print_results(form, results)
         confirm = Menu.yes_no()
         while confirm is False:
             results = Menu.change_form(results)
@@ -197,7 +200,7 @@ class PlayerMenu(Menu):
                     return result
 
 
-class Rankings(InputMenu):
+class Rankings(InputMenu, DisplayMenu):
     @staticmethod
     def show_list(title, list_players):
         """Prints a list to be used in player ranking menus."""
@@ -220,14 +223,14 @@ class Rankings(InputMenu):
                 print(f"Classement : {player['rank']} points ({rank}ème place)")
             i += 1
 
-    def players_details(self, title, list_players):
+    def players_sorted(self, title, list_players):
         """
         Shows player list sorted per names (a) or per rankings (s).
         """
         Rankings.show_list(title, list_players)
 
         answer = self.ask_input(right_answers=["a", "s"],
-                    prompt=TextsRanking.players_details)
+                    prompt=TextsRanking.players_sorted)
 
         return answer
 
@@ -237,57 +240,30 @@ class Rankings(InputMenu):
         nb_tournaments = len(list_tournament)
         answer = ""
         i = 0
-        form = [
-            "Nom : ",
-            "Adresse : ",
-            "Date : ",
-            "Durée (en jours) : ",
-            "Contrôle de temps : ",
-            "Notes ou description : ",
-        ]
+
         for tournament in list_tournament:
-            attributes = list(tournament.values())
-            j = 0
-            print(f"TOURNOI {i+1}")
-            for field in form:
-                print(f"{field}{attributes[j]}")
-                j += 1
+            print(f"\nTOURNOI {i+1}")
+            self.display_tournament(tournament)
             i += 1
+
+        # TODO: variation de ask_input qui prend en charge une liste (arg list len?)
         while Menu.input_ok(right_answers, answer) is False:
-            answer = input(TextsRankings.tournaments).lower()
+            answer = input(TextsRanking.tournaments_list).lower()
             if answer.isnumeric() is True:
                 if int(answer) in range(0, nb_tournaments + 1):
                     return int(answer)
         return answer
 
-    @staticmethod
-    def tournament(tournament):
+    def tournament(self, tournament):
         """Tournament menu for rankings. The returned input allows access to
         the participants list or the list of rounds and matches."""
-        right_answers = ["1", "2", "3", "4", "q"]
-        answer = ""
-        i = 0
-        attributes = list(tournament.values())
-        form = [
-            "Nom : ",
-            "Adresse : ",
-            "Date : ",
-            "Durée (en jours) : ",
-            "Contrôle de temps : ",
-            "Notes ou description : ",
-        ]
-        for field in form:
-            print(f"{field}{attributes[i]}")
-            i += 1
-        while Menu.input_ok(right_answers, answer) is False:
-            answer = input(TextsRankings.tournament).lower()
+        answer = self.ask_input(right_answers=["a", "s", "d"],
+                    prompt=TextsRanking.tournament)
+
         return answer
 
-    @staticmethod
-    def rounds(tournament):
+    def rounds(self, tournament):
         """Shows a list of rounds and matches for the chosen tournament."""
-        right_answers = ["1", "q"]
-        answer = ""
         attributes = list(tournament.values())
         for round in attributes[7]:
             i = 0
@@ -304,8 +280,9 @@ class Rankings(InputMenu):
                     f"{player_one} (score final : {score_one}) et {player_two} (score final : {score_two})"
                 )
                 i += 1
-        while Menu.input_ok(right_answers, answer) is False:
-            answer = input(TextsRankings.rounds).lower()
+
+        answer = self.ask_input(prompt=TextsRanking.rounds)
+
         return answer
 
 
@@ -316,14 +293,7 @@ class TournamentMenu(Menu):
         returns this input immediately.
         If accessed from the 'c' command, which correspond to 'continue', prints
         a warning that there was no ongoing tournament."""
-        form_tournament = [
-            "Nom : ",
-            "Adresse : ",
-            "Date : ",
-            "Durée (en jours, en chiffre) : ",
-            "Contrôle de temps :\n1. Bullet\n2. Blitz\n3. Coup rapide\n",
-            "Notes ou descriptions : ",
-        ]
+        form_tournament = TextsModels.tournament_form
 
         if from_c == True:
             print("* Aucun tournoi en cours ! Vous pouvez créer un nouveau tournoi ci-dessous : * \n\n")
@@ -413,7 +383,7 @@ class TournamentMenu(Menu):
                 )
                 i += 1
         while Menu.input_ok(right_answers, answer) is False:
-            answer = input(TextsRankings.rounds).lower()
+            answer = input(TextsRanking.rounds).lower()
         return answer
 
     @staticmethod

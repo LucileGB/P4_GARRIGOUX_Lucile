@@ -37,7 +37,6 @@ def is_first_test():
             player.table_insert_player()
 
 if __name__ == "__main__":
-    test = "print('BOUUUUH')"
     is_first_test()
     app = controllers.MainControl()
 

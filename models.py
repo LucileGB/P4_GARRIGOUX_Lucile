@@ -131,6 +131,11 @@ class Player:
         return sorted(players, key=lambda value: value["rank"], reverse=True)
 
     @staticmethod
+    def score_list(tournament):
+        players = tournament["players"]
+
+        return sorted(players, key=lambda player: (player["score"], player["rank"]), reverse=True)
+    @staticmethod
     def final_ranking_list(tournament):
         participants = tournament.players
         players = sorted(participants, key=lambda Player: Player.score, reverse=True)

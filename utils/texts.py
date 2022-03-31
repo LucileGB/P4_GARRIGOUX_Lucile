@@ -74,8 +74,7 @@ Pour retourner au menu précédent, tapez R.\n"""
 Q. Quitter\n"""
 
 class TextsRanking:
-    main = """RAPPORTS
-
+    main = """RAPPORTS\n
 1. Liste de tous les joueurs
 2. Liste de tous les tournois\n"""
 
@@ -84,18 +83,36 @@ A. Liste par ordre alphabétique
 S. Liste par score total\n
 """
 
-    players_details = """
+    players_sorted = """
 A. Liste par ordre alphabétique
-S. Liste par score total\n
+S. Liste par score total
+R. Retour\n
 """
-    tournaments = """\nVeuillez entrer le chiffre correspondant au tournoi souhaité pour lister ses joueurs et rounds.
-Tapez R pour revenir à l'écran Rapport.\n"""
+    tournaments_list = """\nPour sélectionner un tournoi, tapez le chiffre correspondant.
+Pour revenir à l'écran Rapport, tapez R.\n"""
 
-    tournament = """\nVeuillez entrer le chiffre correspondant à l'option souhaitée.
-1. Liste des joueurs par ordre alphabétique
-2. Liste des joueurs par classement
-3. Liste des tours et matches du tournoi
-4. Retour à l'écran rapport\n"""
+    tournament = """\nVeuillez entrer le caractère correspondant à l'option souhaitée.
+A. Liste des joueurs par ordre alphabétique
+S. Liste des joueurs par classement
+D. Liste des tours et matches du tournoi
+R. Retour à l'écran rapport\n"""
 
-    rounds = """\nVeuillez taper le caractère correspondant à l'option souhaitée.
-R. Retour à l'écran du tournoi\n"""
+    rounds = """\nTapez R pour retourner à l'écran du tournoi\n"""
+
+class TextsModels:
+    tournament_form = [
+        "Nom :",
+        "Adresse :",
+        "Date :",
+        "Durée (en jours) :",
+        "Contrôle de temps :",
+        "Notes ou description :",
+    ]
+
+    player_form = [
+        "Prénom : ",
+        "Nom de famille : ",
+        "Date de naissance (format : jour/mois/année) : ",
+        "Genre (homme/femme): ",
+        "Classement (nombre total de points): ",
+    ]

@@ -18,7 +18,7 @@ A tout moment, vous pouvez quitter le programme en tapant Q.
     """)
 
     menu_tournament = """CREATION DE TOURNOI\n
-Vous pouvez revenir à l'écran d'accueil en tapant R.
+Pour revenir à l'écran d'accueil, tapez R.
 
 Pour créer un tournoi, veuillez taper les informations suivantes :\n"""
     menu_players = """Bienvenue dans le menu d'ajout de joueurs.
@@ -49,7 +49,8 @@ Merci d'entrer une date conforme.\n"""
     menu_rapport = """Bienvenue dans le menu de rapports.
 Veuillez taper le chiffre correspondant à l'action souhaitée :
 1. Liste de tous les joueurs
-2. Listes de tous les tournois\n"""
+2. Listes de tous les tournois\n
+Pour revenir à l'écran d'accueil, tapez R."""
 
     rapport_players = """Veuillez taper le chiffre correspondant à l'action souhaitée :
 1. Ordonner tous les joueurs par ordre alphabétique
@@ -66,24 +67,19 @@ Veuillez taper le chiffre correspondant à l'action souhaitée :
 Pour retourner au menu précédent, tapez R.\n"""
 
     rankings_main = """RAPPORTS
-Veuillez entrer le chiffre correspondant à la sélection souhaitée.
-Pour retourner au menu principal, tapez R.\n
+
 1. Liste de tous les joueurs
 2. Liste de tous les tournois\n"""
 
     rankings_players = """RAPPORTS : JOUEURS\n
-Veuillez entrer le chiffre correspondant à la sélection souhaitée.
-1. Liste par ordre alphabétique
-2. Liste par classement
-R. Retour à l'écran précédent\n"""
+A. Liste par ordre alphabétique
+S. Liste par score total\n
+"""
 
-    rankings_players_alpha = """\nVeuillez entrer le chiffre correspondant à la sélection souhaitée.
-1. Liste par classement
-2. Retour à l'écran précédent\n"""
-
-    rankings_players_rank = """\nVeuillez entrer le chiffre correspondant à la sélection souhaitée.
-1. Liste par ordre alphabétique
-2. Retour à l'écran précédent\n"""
+    rankings_players_details = """
+A. Liste par ordre alphabétique
+S. Liste par score total\n
+"""
 
     rankings_tournaments = """\nVeuillez entrer le chiffre correspondant au tournoi souhaité pour lister ses joueurs et rounds.
 Tapez R pour revenir à l'écran Rapport.\n"""

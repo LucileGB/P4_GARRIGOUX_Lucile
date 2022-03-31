@@ -16,7 +16,7 @@ class InputMenu:
         else:
             return False
 
-    def ask_input(self, right_answers, prompt=None):
+    def ask_input(self, right_answers=[], prompt=None):
         answer = "placeholder"
 
         if prompt:
@@ -199,10 +199,12 @@ class PlayerMenu(Menu):
 
 class Rankings(InputMenu):
     @staticmethod
-    def show_list(list_players):
+    def show_list(title, list_players):
         """Prints a list to be used in player ranking menus."""
         i = 0
         rankings = list(sorted(list_players, key=lambda i: i["rank"], reverse=True))
+
+        print(title)
         for player in list_players:
             rank = ""
             for player_r in rankings:
@@ -218,24 +220,12 @@ class Rankings(InputMenu):
                 print(f"Classement : {player['rank']} points ({rank}ème place)")
             i += 1
 
-    def players_alpha(self, list_players):
-        #TODO : simplify this!
-        """Shows the player list in alphabetical order."""
-        print("JOUEURS PAR ORDRE ALPHABETIQUE\n")
-        Rankings.show_list(list_players)
+    def players_details(self, title, list_players):
+        """Shows player list sorted per names (a) or per rankings (s)."""
+        Rankings.show_list(title, list_players)
 
-        answer = self.ask_input(right_answers=["1", "2"],
-                    prompt=Texts.rankings_players_alpha)
-
-        return answer
-
-    def players_rank(self, list_players):
-        """Shows the player list per rankings."""
-        print("JOUEURS PAR CLASSEMENT\n")
-        Rankings.show_list(list_players)
-
-        answer = self.ask_input(right_answers=["1", "2"],
-                    prompt=Texts.rankings_players_rank)
+        answer = self.ask_input(right_answers=["a", "s"],
+                    prompt=Texts.rankings_players_details)
 
         return answer
 

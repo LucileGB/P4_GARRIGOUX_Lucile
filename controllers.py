@@ -256,47 +256,49 @@ class RankingControl:
 
 
     def players(self):
-        answers = ["1", "2"]
-        answers_values = [self.players_alpha, self.players_ranked]
-        actions_dict = dict(zip(answers, answers_values))
-        answer = self.menu.ask_input(right_answers=["1", "2"],
-                                prompt=Texts.rankings_players)
+        """
+        Opens a menu to display the player list sorted by name (a) or
+        ranking (s).
+        """
+        players = models.Player.all()
+        answers = ["a", "s"]
 
-        process_answer(answer,
-                    actions=actions_dict,
-                    previous_view=self.main)
+        answer = self.menu.ask_input(right_answers=["a", "s"],
+                                prompt=Texts.rankings_players).lower()
 
-    def return_players(self, tournament=None):
-        #TODO : might be more appropriate in a "ranking" model class
-        """Returns a list of players."""
-        if tournament == None:
-            players = models.Player.all()
-        else:
-            players = tournament["players"]
+        if answer in answers:
+            answer = self.display_players_list(answer, players)
 
-        return players
+        process_answer(answer, previous_view=self.main)
 
-    def players_alpha(self, tournament=None):
-        players = self.return_players(tournament)
-        players = models.Player.alphabetical(players)
+    def display_players_list(self, answer, players):
+        """
+        We lower() answer because this function is recursive and needs to
+        format answers to itself. As long as Q or R aren't pressed, the function
+        remains active.
 
-        answer = self.menu.players_alpha(list_alpha)
-        if answer == "1":
-            self.players_ranked()
-        elif answer == "2":
-            self.main()
-        elif answer == "q":
-            sys.exit()
+        As process_answer can't take class methods with arguments, we have to
+        use this setup for the alphabetical/ranking order switch.
+        """
+        #TODO: tournament argument?
+        answer = answer.lower()
 
-    def players_ranked(self):
-        list_ranked = models.Player.rank_list()
-        answer = views.Rankings.players_rank(list_ranked)
-        if answer == "1":
-            MainControl.players_alpha(list_ranked)
-        elif answer == "2":
-            MainControl.main()
-        elif answer == "q":
-            sys.exit()
+        if answer == "a":
+            list_alpha = models.Player.alphabetical(players)
+            answer = self.menu.players_details(
+                                "JOUEURS PAR ORDRE ALPHABETIQUE\n",
+                                list_alpha)
+        elif answer == "s":
+            #TODO : add an argument to rank_list to harmonize if want to streamline?
+            list_ranked = models.Player.rank_list()
+            answer = self.menu.players_details(
+                                "JOUEURS PAR SCORE\n",
+                                list_ranked)
+
+        elif answer in ["r", "q"]:
+            process_answer(answer, previous_view=self.main)
+
+        self.display_players_list(answer, players)
 
     def tournaments(self):
         list_tournament = models.Tournament.all_tournaments()

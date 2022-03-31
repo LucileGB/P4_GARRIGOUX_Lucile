@@ -1,10 +1,10 @@
 import gettext
 
-from texts import Texts
+from utils.texts import Texts, TextsRanking
 
 gettext.install("P4", "/locale")
 
-
+#TODO : formatMenu pour listes
 class InputMenu:
     def __init__(self, interrupts=["r", "q"]):
         self.interrupts = interrupts
@@ -221,15 +221,17 @@ class Rankings(InputMenu):
             i += 1
 
     def players_details(self, title, list_players):
-        """Shows player list sorted per names (a) or per rankings (s)."""
+        """
+        Shows player list sorted per names (a) or per rankings (s).
+        """
         Rankings.show_list(title, list_players)
 
         answer = self.ask_input(right_answers=["a", "s"],
-                    prompt=Texts.rankings_players_details)
+                    prompt=TextsRanking.players_details)
 
         return answer
 
-    def ranking_tournaments(self, list_tournament):
+    def tournaments_list(self, list_tournament):
         """Shows a list of all tournaments."""
         right_answers = ["r", "q"]
         nb_tournaments = len(list_tournament)
@@ -252,15 +254,15 @@ class Rankings(InputMenu):
                 j += 1
             i += 1
         while Menu.input_ok(right_answers, answer) is False:
-            answer = input(Texts.rankings_tournaments).lower()
+            answer = input(TextsRankings.tournaments).lower()
             if answer.isnumeric() is True:
                 if int(answer) in range(0, nb_tournaments + 1):
                     return int(answer)
         return answer
 
     @staticmethod
-    def ranking_tournament(tournament):
-        """Tournament menu for rankings. The returned input allow access to
+    def tournament(tournament):
+        """Tournament menu for rankings. The returned input allows access to
         the participants list or the list of rounds and matches."""
         right_answers = ["1", "2", "3", "4", "q"]
         answer = ""
@@ -278,11 +280,11 @@ class Rankings(InputMenu):
             print(f"{field}{attributes[i]}")
             i += 1
         while Menu.input_ok(right_answers, answer) is False:
-            answer = input(Texts.ranking_tournament).lower()
+            answer = input(TextsRankings.tournament).lower()
         return answer
 
     @staticmethod
-    def ranking_rounds(tournament):
+    def rounds(tournament):
         """Shows a list of rounds and matches for the chosen tournament."""
         right_answers = ["1", "q"]
         answer = ""
@@ -303,7 +305,7 @@ class Rankings(InputMenu):
                 )
                 i += 1
         while Menu.input_ok(right_answers, answer) is False:
-            answer = input(Texts.ranking_rounds).lower()
+            answer = input(TextsRankings.rounds).lower()
         return answer
 
 
@@ -411,7 +413,7 @@ class TournamentMenu(Menu):
                 )
                 i += 1
         while Menu.input_ok(right_answers, answer) is False:
-            answer = input(Texts.ranking_rounds).lower()
+            answer = input(TextsRankings.rounds).lower()
         return answer
 
     @staticmethod

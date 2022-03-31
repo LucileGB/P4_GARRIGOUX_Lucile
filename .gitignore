@@ -1,6 +1,4 @@
 __pycache__/
 .gitignore
 venv/
-maintest.py
 *.json
-views2.py

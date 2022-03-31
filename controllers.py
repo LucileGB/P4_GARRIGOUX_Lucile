@@ -2,8 +2,8 @@ import sys
 import models
 import views
 
-from helper import CheckForm
-from texts import Texts
+from utils.helper import CheckForm
+from utils.texts import Texts, TextsRanking
 
 """NB_PLAYERS sets the number of players per tournament.
 NB_ROUNDS sets the number of rounds per tournament."""
@@ -42,7 +42,7 @@ class MainControl:
         #self.player_control = PlayerControl()
 
     def main(self):
-        answers=["n", "c", "ra", "u"]
+        answers=["n", "c", "r", "u"]
         answers_values=[self.create_tournament,
                 self.ongoing_tournament,
                 self.rankings.main,
@@ -250,21 +250,22 @@ class RankingControl:
         answers_values = [self.players, self.tournaments]
         actions_dict = dict(zip(answers, answers_values))
         answer = self.menu.ask_input(right_answers=answers,
-                                prompt=Texts.rankings_main)
+                                prompt=TextsRanking.main)
 
         process_answer(answer, actions=actions_dict, previous_view=self.main)
 
 
     def players(self):
+        #todo : adapt for tournaments
         """
-        Opens a menu to display the player list sorted by name (a) or
+        Opens a menu to display a player list sorted by name (a) or
         ranking (s).
         """
         players = models.Player.all()
         answers = ["a", "s"]
 
         answer = self.menu.ask_input(right_answers=["a", "s"],
-                                prompt=Texts.rankings_players).lower()
+                                prompt=TextsRanking.players).lower()
 
         if answer in answers:
             answer = self.display_players_list(answer, players)
@@ -301,17 +302,17 @@ class RankingControl:
         self.display_players_list(answer, players)
 
     def tournaments(self):
-        list_tournament = models.Tournament.all_tournaments()
-        answer = views.Rankings.ranking_tournaments(list_tournament)
-        if answer == "r":
-            self.main()
-        elif answer == "q":
-            sys.exit()
+        list_tournaments = models.Tournament.all_tournaments()
+        answer = self.menu.tournaments_list(list_tournaments)
+
+        if answer not in ["r", "q"]:
+            self.tournament_rankings(list_tournament[answer - 1])
         else:
-            self.tournament_rankings(list_tournament[choice - 1])
+            process_answer(answer, previous_view=self.main)
+
 
     def tournament_rankings(self, tournament):
-        choice = views.Rankings.ranking_tournament(tournament)
+        choice = self.menu.tournament(tournament)
         if choice == "1":
             MainControl.participants_alpha(tournament)
         elif choice == "2":

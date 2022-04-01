@@ -3,7 +3,7 @@ from datetime import date
 import views
 
 
-class CheckForm:
+class FormChecker:
     def check_date(input):
         """Checks if the date is set to the one accepted format."""
         try:
@@ -16,9 +16,9 @@ class CheckForm:
 
     def correct_date(input):
         """Only returns the date once it's correctly inputted."""
-        while CheckForm.check_date(input) is False:
+        while FormChecker.check_date(input) is False:
             new_date = views.Menu.input_new(texts.Texts.wrong_date)
-            new_date = CheckForm.check_date(new_date)
+            new_date = FormChecker.check_date(new_date)
             if new_date is not False:
                 return new_date
 

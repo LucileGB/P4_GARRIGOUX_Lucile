@@ -108,19 +108,16 @@ class Player:
         return result
 
     @staticmethod
-    def alphabetical(unsorted):
-        return sorted(unsorted, key=lambda value: value["last_name"])
+    def sort_list(unsorted, alpha=False, rank=False, score=True):
+        if alpha == True:
+            return sorted(unsorted, key=lambda value: value["last_name"])
+        elif rank == True:
+            return sorted(unsorted, key=lambda value: value["rank"], reverse=True)
+        else:
+            return sorted(unsorted,
+                        key=lambda player: (player["score"], player["rank"]),
+                        reverse=True)
 
-    @staticmethod
-    def rank_list():
-        players = players_table.all()
-        return sorted(players, key=lambda value: value["rank"], reverse=True)
-
-    @staticmethod
-    def score_list(tournament):
-        players = tournament["players"]
-
-        return sorted(players, key=lambda player: (player["score"], player["rank"]), reverse=True)
     @staticmethod
     def final_ranking_list(tournament):
         participants = tournament.players

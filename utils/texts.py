@@ -54,7 +54,7 @@ Pour retourner au menu précédent, tapez R.\n"""
 1 si le joueur 1 a gagné, 2 si le joueur 2 a gagné, 3 pour un match nul.\n"""
 
     end_menu = """\nVeuillez entrer le caractère correspondant à la sélection souhaitée.
-1. Retour à l'écran d'accueil
+R. Retour à l'écran d'accueil
 Q. Quitter\n"""
 
     confirm_choice = "Confirmez votre choix (o/n) :"

@@ -2,7 +2,7 @@ import sys
 import models
 import views
 
-from utils.helper import CheckForm
+from utils.helper import FormChecker
 from utils.texts import Texts, TextsRanking
 
 """NB_PLAYERS sets the number of players per tournament.
@@ -10,37 +10,50 @@ NB_ROUNDS sets the number of rounds per tournament."""
 NB_PLAYERS = 8
 NB_ROUNDS = 4
 
+class Control:
+    def process_answer(self, answer, previous_view=None,
+                    actions=None, return_home=False):
+        """
+        Processes a user answer to execute the corresponding function.
+        """
+        answer = answer.lower()
 
-def process_answer(answer, previous_view=None, actions=None, return_home=False):
-    """
-    Processes a user answer to execute the corresponding function.
-    """
-    answer = answer.lower()
+        if actions:
+            for key in actions:
+                if answer == key:
+                    actions[key]()
 
-    if actions:
-        for key in actions:
-            if answer == key:
-                actions[key]()
+        if answer == "q":
+            sys.exit()
 
-    if answer == "q":
-        sys.exit()
-
-    if previous_view and answer == "r":
-        if return_home == False:
-            previous_view()
-        else:
-            app = MainControl()
-            app.main()
+        if previous_view and answer == "r":
+            if return_home == False:
+                previous_view()
+            else:
+                app = MainControl()
+                app.main()
 
 
-class MainControl:
+class FormControl:
+    def check_field(answer, checker=None, error_message=None, optional=False):
+        """Take an answer and an optional checker function.
+        If optional=True, won't raise an error if unfilled."""
+        if optional == False and len(answer) == 0:
+            print(error_message)
+            return False
+
+        checker(field)
+
+        return True
+
+
+class MainControl(Control):
     def __init__(self):
-        self.tournament_menu = views.TournamentMenu()
-        self.rankings = RankingControl()
         self.players = PlayerControl()
-        #self.players_models = models.Player()
-        #self.tournament_models = models.Tournament()
-        #self.tournament_control = TournamentControl()
+        self.rankings = RankingControl()
+        self.tournament_menu = views.TournamentMenu()
+        self.tournaments = TournamentControl()
+
 
     def main(self):
         answers=["n", "c", "r", "u"]
@@ -54,17 +67,16 @@ class MainControl:
                                 prompt=Texts.main_menu,
                                 )
 
-        process_answer(answer, actions=actions_dict)
+        self.process_answer(answer, actions=actions_dict)
+
 
     def create_tournament(self):
-        tournament_instance = TournamentControl.create_tournament()
         while len(models.Player.list_participants()) < NB_PLAYERS:
-            PlayerControl.main()
-        for player_dict in models.Player.list_participants():
-            player = models.Player(player_dict)
-            tournament_instance.players.append(player)
-        tournament_instance.save()
-        TournamentControl.run_tournament()
+            self.players.main()
+
+        self.tournament.init_tournament(models.Player.list_participants())
+        self.tournament.run_tournament()
+
 
     def ongoing_tournament(self):
         tournament = models.Tournament.return_ongoing_tournament()
@@ -75,27 +87,39 @@ class MainControl:
             TournamentControl.run_tournament()
 
 
-class TournamentControl:
+class TournamentControl(Control, FormControl):
     def __init__(self):
         self.tournament_menu = views.TournamentMenu()
-        self.tournament_model = models.Tournament()
 
-    def create_tournament():
-        models.Player.clear_participants()
+    def init_tournament(self, list_participants):
+        """
+        Create a tournament instance, fill it with participants,
+        then save it.
+        """
+        tournament_instance = TournamentControl.create_tournament()
+
+        for player_dict in models.Player.list_participants():
+            player = models.Player(player_dict)
+            tournament_instance.players.append(player)
+
+        tournament_instance.save()
+
+
+    def create_tournament(self):
         form = views.TournamentMenu.create_tournament()
         if form == "q":
             sys.exit()
         elif form == "r":
             MainControl.main()
         else:
-            if CheckForm.check_date(form[2]) is False:
+            if FormChecker.check_date(form[2]) is False:
                 print("Erreur sur la date du tournoi.")
-                new_date = CheckForm.correct_date(form[2])
+                new_date = FormChecker.correct_date(form[2])
                 form[2] = new_date
-            if CheckForm.check_number(form[3]) is False:
+            if FormChecker.check_number(form[3]) is False:
                 print("Merci d'entrer un chiffre pour la durée du tournoi.")
-                form[3] == CheckForm.check_number(form[3])
-            form[4] = CheckForm.control_time(form[4])
+                form[3] == FormChecker.check_number(form[3])
+            form[4] = FormChecker.control_time(form[4])
             dict_tournament = {
                 "name": form[0],
                 "place": form[1],
@@ -119,19 +143,14 @@ class TournamentControl:
             current_tournament = models.Tournament.return_last_tournament()
 
         current_tournament.set_ended()
+        models.Player.clear_participants()
 
         list_tournament = models.Tournament.all_tournaments()
         finished_tournament = list_tournament[-1]
-        rankings = list(
-            sorted(
-                finished_tournament["players"], key=lambda i: i["score"], reverse=True
-            )
-        )
-        answer = views.TournamentMenu.end_screen(finished_tournament, rankings)
-        if answer == "1":
-            MainControl.main()
-        elif answer == "q":
-            sys.exit()
+        rankings = models.Player.sort_list(finished_tournament["players"],
+                                            score=True)
+        answer = self.menu.end_screen(finished_tournament, rankings)
+        self.process_answer(answer, previous_view=True, return_home=True)
 
     @staticmethod
     def round_control():
@@ -144,7 +163,7 @@ class TournamentControl:
             tournament_instance.round_end(outcome)
 
 
-class PlayerControl:
+class PlayerControl(Control):
     def __init__(self):
         self.menu = views.PlayerMenu()
 
@@ -182,13 +201,13 @@ class PlayerControl:
             player = str(self.menu.ask_input(max_range=len(players),
                                                 prompt=Texts.select_players)
                         )
-            process_answer(player, previous_view=True, return_home=True)
+            self.process_answer(player, previous_view=True, return_home=True)
 
             new_rank = str(self.menu.ask_input(max_range=10000,
                                                 prompt=Texts.new_rank,
                                                 is_float=True)
                         )
-            process_answer(new_rank, previous_view=True, return_home=True)
+            self.process_answer(new_rank, previous_view=True, return_home=True)
             confirmed = self.menu.confirm_choice()
 
         picked = models.Player(players[int(player)-1])
@@ -201,16 +220,16 @@ class PlayerControl:
         elif form == "q":
             sys.exit
         else:
-            if CheckForm.check_date(form[2]) is False:
+            if FormChecker.check_date(form[2]) is False:
                 print("Champs date de naissance :")
-                new_date = CheckForm.correct_date(form[2])
+                new_date = FormChecker.correct_date(form[2])
                 form[2] = new_date
-            if CheckForm.check_gender(form[3]) is False:
+            if FormChecker.check_gender(form[3]) is False:
                 print("Champs genre :")
-                form[3] = CheckForm.check_gender(form[3])
-            if CheckForm.check_number(form[4]) is False:
+                form[3] = FormChecker.check_gender(form[3])
+            if FormChecker.check_number(form[4]) is False:
                 print("Champs classement :")
-                form[4] = CheckForm.check_number(form[4])
+                form[4] = FormChecker.check_number(form[4])
 
             new_player = models.Player(
                 {
@@ -250,7 +269,7 @@ class PlayerControl:
                 selection.is_playing_true()
 
 
-class RankingControl:
+class RankingControl(Control):
     def __init__(self):
         self.menu = views.Rankings()
 
@@ -262,7 +281,7 @@ class RankingControl:
         answer = self.menu.ask_input(right_answers=answers,
                                 prompt=TextsRanking.main)
 
-        process_answer(answer,
+        self.process_answer(answer,
                     actions=actions_dict,
                     previous_view=self.main,
                     return_home=True
@@ -284,7 +303,8 @@ class RankingControl:
         if answer in answers:
             answer = self.display_players_list(answer, players)
 
-        process_answer(answer, previous_view=self.main)
+        self.process_answer(answer, previous_view=self.main)
+
 
     def display_players_list(self, answer, players):
         """
@@ -295,23 +315,21 @@ class RankingControl:
         As process_answer doesn't take class methods with arguments, we use
         this setup for the alphabetical/ranking order switch.
         """
-        #TODO: tournament argument?
         answer = answer.lower()
 
         if answer == "a":
-            list_alpha = models.Player.alphabetical(players)
+            list_alpha = models.Player.sort_list(players, alpha=True)
             answer = self.menu.players_sorted(
                                 "JOUEURS PAR ORDRE ALPHABETIQUE\n",
                                 list_alpha)
         elif answer == "s":
-            #TODO : add an argument to rank_list to harmonize if want to streamline?
-            list_ranked = models.Player.rank_list()
+            list_ranked = models.Player.sort_list(players, rank=True)
             answer = self.menu.players_sorted(
                                 "JOUEURS PAR SCORE\n",
                                 list_ranked)
 
         elif answer in ["r", "q"]:
-            process_answer(answer, previous_view=self.main)
+            self.process_answer(answer, previous_view=self.main)
 
         self.display_players_list(answer, players)
 
@@ -323,10 +341,14 @@ class RankingControl:
         if str(answer).lower() not in ["r", "q"]:
             self.tournament(list_tournaments[answer - 1])
         else:
-            process_answer(answer, previous_view=self.main)
+            self.process_answer(answer, previous_view=self.main)
 
 
     def tournament(self, tournament):
+        """
+        Shows explanations, then calls recursive display_tournament_detail
+        to deal with user inputs.
+        """
         players = models.Player.all()
         answers = ["a", "s", "d"]
 
@@ -336,7 +358,7 @@ class RankingControl:
         if answer in answers:
             answer = self.display_tournament_detail(tournament, answer)
 
-        process_answer(answer, previous_view=self.tournaments_list)
+        self.process_answer(answer, previous_view=self.tournaments_list)
 
 
     def display_tournament_detail(self, tournament, answer):
@@ -350,34 +372,29 @@ class RankingControl:
         """
         #TODO: tournament argument?
         answer = answer.lower()
+        players = tournament["players"]
 
         if answer == "a":
-            list_alpha = models.Player.alphabetical(tournament["players"])
+            list_alpha = models.Player.sort_list(players, alpha=True)
             answer = self.menu.players_sorted(
                                 "JOUEURS PAR ORDRE ALPHABETIQUE\n",
                                 list_alpha)
+
         elif answer == "s":
-            #TODO : add an argument to rank_list to harmonize if want to streamline?
-            list_ranked = models.Player.score_list(tournament)
+            list_ranked = models.Player.sort_list(players, score=True)
             answer = self.menu.players_sorted(
                                 "JOUEURS PAR SCORE\n",
                                 list_ranked)
 
         elif answer == "d":
-            answer = self.all_rounds(tournament)
+            answer = self.menu.rounds(tournament)
 
         elif answer in ["r", "q"]:
-            process_answer(answer, previous_view=self.tournaments_list)
+            self.process_answer(answer, previous_view=self.tournaments_list)
 
         self.display_tournament_detail(tournament, answer)
 
 
-    def all_rounds(self, tournament):
-        answer = self.menu.rounds(tournament)
-
-        return answer
-
-
-class LanguageControl:
+class LanguageControl(Control):
     def valid_name(input):
         valid_name = ["english", "français", "francais"]

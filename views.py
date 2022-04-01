@@ -57,7 +57,7 @@ class DisplayMenu:
             criteria = "rank"
         else:
             criteria = "score"
-        print(list_players)
+
         ranked = list(sorted(list_players,
                             key=lambda p: p[f"{criteria}"],
                             reverse=True))

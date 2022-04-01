@@ -36,8 +36,10 @@ def is_first_test():
         for player in all_players:
             player.table_insert_player()
 
+
 if __name__ == "__main__":
     is_first_test()
+
     app = controllers.MainControl()
 
     app.main()

@@ -11,7 +11,7 @@ NB_PLAYERS = 8
 NB_ROUNDS = 4
 
 
-def process_answer(answer, previous_view=None, actions=None):
+def process_answer(answer, previous_view=None, actions=None, return_home=False):
     """
     Processes a user answer to execute the corresponding function.
     """
@@ -22,28 +22,32 @@ def process_answer(answer, previous_view=None, actions=None):
             if answer == key:
                 actions[key]()
 
-    if previous_view and answer == "r":
-        previous_view()
-
     if answer == "q":
         sys.exit()
+
+    if previous_view and answer == "r":
+        if return_home == False:
+            previous_view()
+        else:
+            app = MainControl()
+            app.main()
 
 
 class MainControl:
     def __init__(self):
         self.tournament_menu = views.TournamentMenu()
         self.rankings = RankingControl()
+        self.players = PlayerControl()
         #self.players_models = models.Player()
         #self.tournament_models = models.Tournament()
         #self.tournament_control = TournamentControl()
-        #self.player_control = PlayerControl()
 
     def main(self):
         answers=["n", "c", "r", "u"]
         answers_values=[self.create_tournament,
                 self.ongoing_tournament,
                 self.rankings.main,
-                PlayerControl.change_rank]
+                self.players.change_rank]
         actions_dict = dict(zip(answers, answers_values))
         menu = views.InputMenu(interrupts=["q"])
         answer = menu.ask_input(right_answers=answers,
@@ -123,10 +127,10 @@ class TournamentControl:
                 finished_tournament["players"], key=lambda i: i["score"], reverse=True
             )
         )
-        choice = views.TournamentMenu.end_screen(finished_tournament, rankings)
-        if choice == "1":
+        answer = views.TournamentMenu.end_screen(finished_tournament, rankings)
+        if answer == "1":
             MainControl.main()
-        elif choice == "q":
+        elif answer == "q":
             sys.exit()
 
     @staticmethod
@@ -142,14 +146,13 @@ class TournamentControl:
 
 class PlayerControl:
     def __init__(self):
-        self.player_menu = views.PlayerMenu()
-        self.player_model = models.Player()
+        self.menu = views.PlayerMenu()
 
-    def main():
+    def main(self):
         condition = False
         while condition is False:
-            choice = views.PlayerMenu.main()
-            if choice == "1":
+            answer = views.PlayerMenu.main()
+            if answer == "1":
                 if len(models.Player.list_not_participants()) == 0:
                     condition = True
                     print("Aucun joueur disponible : veuillez en créer.\n")
@@ -157,29 +160,39 @@ class PlayerControl:
                 else:
                     condition = True
                     PlayerControl.select_players()
-            elif choice == "2":
+            elif answer == "2":
                 condition = True
                 PlayerControl.create_player()
             elif choice == "q":
                 sys.exit()
 
-    def change_rank():
-        is_on = True
-        list_all = models.Player.list_abridged(models.Player.all())
-        while is_on:
-            print("CHANGER LE CLASSEMENT D'UN JOUEUR\n")
-            selection = views.PlayerMenu.change_ranks(list_all)
-            if selection == "q":
-                sys.exit()
-            elif selection == "r":
-                print("Menu quitté.\n")
-                is_on = False
-                MainControl.main()
-            elif selection[1].isnumeric() is False:
-                print("Réponse invalide.")
-            else:
-                player = models.Player(selection[0])
-                player.change_rank(int(selection[1]))
+    def change_rank(self):
+        """
+        Takes a player index, checks the user doesn't want to cancel with
+        process_answer, then does the same with the new point amount.
+        """
+        confirmed = False
+        players = models.Player.all()
+        self.menu.display_players_ranked(
+                        "CHANGER LE CLASSEMENT D'UN JOUEUR\n",
+                        players
+                        )
+
+        while confirmed == False:
+            player = str(self.menu.ask_input(max_range=len(players),
+                                                prompt=Texts.select_players)
+                        )
+            process_answer(player, previous_view=True, return_home=True)
+
+            new_rank = str(self.menu.ask_input(max_range=10000,
+                                                prompt=Texts.new_rank,
+                                                is_float=True)
+                        )
+            process_answer(new_rank, previous_view=True, return_home=True)
+            confirmed = self.menu.confirm_choice()
+
+        picked = models.Player(players[int(player)-1])
+        picked.change_rank(float(new_rank))
 
     def create_player():
         form = views.PlayerMenu.create_player()
@@ -249,7 +262,11 @@ class RankingControl:
         answer = self.menu.ask_input(right_answers=answers,
                                 prompt=TextsRanking.main)
 
-        process_answer(answer, actions=actions_dict, previous_view=self.main)
+        process_answer(answer,
+                    actions=actions_dict,
+                    previous_view=self.main,
+                    return_home=True
+                    )
 
 
     def players(self):
@@ -303,7 +320,7 @@ class RankingControl:
         list_tournaments = models.Tournament.all_tournaments()
         answer = self.menu.tournaments_list(list_tournaments)
 
-        if answer not in ["r", "q"]:
+        if str(answer).lower() not in ["r", "q"]:
             self.tournament(list_tournaments[answer - 1])
         else:
             process_answer(answer, previous_view=self.main)

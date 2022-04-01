@@ -40,30 +40,14 @@ Pour créer un joueurs, veuillez taper les informations suivantes :\n"""
     new_gender = """Veuillez entrer un genre : homme ou femme.\n"""
     wrong_date = """Date invalide. Format : jour/mois/année.
 Merci d'entrer une date conforme.\n"""
-    new_number = """Merci d'entrer un chiffre.\n"""
     wrong_time_control = """Veuillez taper le chiffre correspondant à votre sélection :
 1. Bullet
 2. Blitz
 3. Coup rapide\n"""
 
-    menu_rapport = """Bienvenue dans le menu de rapports.
-Veuillez taper le chiffre correspondant à l'action souhaitée :
-1. Liste de tous les joueurs
-2. Listes de tous les tournois\n
-Pour revenir à l'écran d'accueil, tapez R."""
+    select_players = """Pour sélectionner un joueur, entrez le chiffre correspondant.\n"""
 
-    rapport_players = """Veuillez taper le chiffre correspondant à l'action souhaitée :
-1. Ordonner tous les joueurs par ordre alphabétique
-2. Ordonner tous les joueurs par classement\n"""
-
-    rapport_tournament = """Veuillez sélectionner un tournoi :\n"""
-
-    menu_rapport_tournament = """Veuillez taper le chiffre correspondant à l'action souhaitée :
-1. Afficher tous les participants
-2. Afficher tous les tours du tournoi
-3. Afficher tous les matches du tournoi\n"""
-
-    select_players = """Veuillez taper le chiffre du joueur souhaité.
+    new_rank = """Veuillez taper le nouveau nombre de point. S'il y a une décimale, utilisez un point à la place d'une virgule (ex : 10.5).
 Pour retourner au menu précédent, tapez R.\n"""
 
     matches_instructions = """Entrer les résultats :
@@ -72,6 +56,8 @@ Pour retourner au menu précédent, tapez R.\n"""
     end_menu = """\nVeuillez entrer le caractère correspondant à la sélection souhaitée.
 1. Retour à l'écran d'accueil
 Q. Quitter\n"""
+
+    confirm_choice = "Confirmez votre choix (o/n) :"
 
 class TextsRanking:
     main = """RAPPORTS\n

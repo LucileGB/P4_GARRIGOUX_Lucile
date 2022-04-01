@@ -4,7 +4,7 @@ from utils.texts import Texts, TextsRanking, TextsModels
 
 gettext.install("P4", "/locale")
 
-#TODO : formatMenu pour listes
+
 class InputMenu:
     def __init__(self, interrupts=["r", "q"]):
         self.interrupts = interrupts
@@ -16,7 +16,8 @@ class InputMenu:
         else:
             return False
 
-    def ask_input(self, right_answers=[], prompt=None):
+    def ask_input(self, right_answers=[], prompt=None, max_range=False,
+                is_float=False):
         answer = "placeholder"
 
         if prompt:
@@ -24,10 +25,55 @@ class InputMenu:
 
         while self.validate(answer, right_answers) is False:
             answer = input(_("Réponse : "))
+            if max_range:
+                if self.check_num_input(answer, max_range) == True:
+                    if is_float == True:
+                        return float(answer)
+                    else:
+                        return int(answer)
 
         return answer
 
+    def check_num_input(self, answer, max_range):
+        if answer.isnumeric():
+            if int(answer) in range(1, max_range+1):
+                return True
+
+    def confirm_choice(self, prompt=Texts.confirm_choice):
+        answer = self.ask_input(right_answers=["o", "y", "n"], prompt=prompt)
+
+        if answer == "o" or answer == "y":
+            return True
+        if answer == "n":
+            return False
+
 class DisplayMenu:
+    def display_players_ranked(self, title, list_players, by_score=False):
+        """
+        Prints a player list sorted by rank if by_score is False, and
+        by score otherwise.
+        """
+        if by_score == False:
+            criteria = "rank"
+        else:
+            criteria = "score"
+        print(list_players)
+        ranked = list(sorted(list_players,
+                            key=lambda p: p[f"{criteria}"],
+                            reverse=True))
+        i = 0
+
+        print(title)
+        for player in list_players:
+            self.display_player(player, i)
+            rank = ranked.index(player) + 1
+
+            if rank == 1:
+                print(f"Classement : {player[criteria]} points (1ère place)")
+            else:
+                print(f"Classement : {player[criteria]} points ({rank}ème place)")
+            i += 1
+
     def display_tournament(self, tournament):
         form = TextsModels.tournament_form
         attributes = list(tournament.values())
@@ -35,6 +81,10 @@ class DisplayMenu:
 
         for key, value in tournament_dict.items():
             print(f"{key} {value}")
+
+    def display_player(self, player, index, rank=False):
+        print(f"\n{index+1}. {player['first_name']} {player['last_name']}")
+        print(f"Date de naissance : {player['birth_date']}")
 
 class Menu(InputMenu):
     @staticmethod
@@ -106,14 +156,13 @@ class Menu(InputMenu):
 
     @staticmethod
     def print_results(fields, answers):
-        # dict et zip
-        i = 0
-        for field in fields:
-            print(f"{fields[i]}{answers[i]}")
-            i += 1
+        dict = dict(zip(fields, answers))
+
+        for key, value in dict.item:
+            print(f"{key}{value}")
 
 
-class PlayerMenu(Menu):
+class PlayerMenu(DisplayMenu, InputMenu):
     @staticmethod
     def main():
         """Return user input for the main player menu."""
@@ -146,88 +195,42 @@ class PlayerMenu(Menu):
     def select_players(player_list, participants_list):
         """Add players to a tournament's players field. If R or Q are typed,
         interrupts the process and returns them immediately."""
-        print(Texts.select_players)
-        if len(participants_list) > 0:
+        length = len(participants_list)
+        if length > 0:
             i = 0
             print("PARTICIPANTS :")
             for player in participants_list:
-                name = f"{player['first_name']} {player['last_name']}"
-                print(f"Joueur {i+1} : {name}")
+                self.display_player(player, i)
                 i += 1
-        has_chosen = False
-        while has_chosen is False:
-            selected = input("Chiffre : ")
-            if selected.lower() == "q":
-                return "q"
-            elif selected.lower() == "r":
-                return "r"
-            elif selected.isnumeric() is False:
-                print("Veuillez taper un chiffre.")
-            elif int(selected) > len(player_list):
-                print("Ce nombre ne correspond à aucun joueur.")
-            else:
-                player = player_list[int(selected) - 1]
-                name = f"{player['first_name']} {player['last_name']}"
-                print(f"Vous avez sélectionné {name}.")
-                confirm = Menu.yes_no()
-                if confirm is True:
-                    return player
 
-    @staticmethod
-    def change_ranks(player_list):
-        has_chosen = False
-        while has_chosen is False:
-            print("Sélection d'un joueur :")
-            selected = input(Texts.new_number)
-            if selected == "q":
-                return "q"
-            if selected == "r":
-                return "r"
-            elif selected.isnumeric() is False:
-                print("Veuillez taper un chiffre.")
-            elif selected.isnumeric() is True and (int(selected) - 1) > len(
-                player_list
-            ):
-                print("Ce nombre ne correspond à aucun joueur.")
-            else:
-                player = player_list[int(selected) - 1]
-                name = f"{player['first_name']} {player['last_name']}"
-                print(f"Sélection : {name}.")
-                new_rank = input("Veuillez taper son nouveau classement : ")
-                confirm = Menu.yes_no()
-                if confirm is True:
-                    result = (player, new_rank.lower())
-                    return result
+        selected = self.ask_input(max_range=length,
+                                    prompt=Texts.select_players)
+        #TODO: si ça bugue, ce sera ci-dessous
+        player = player_list[int(selected) - 1]
+        name = f"{player['first_name']} {player['last_name']}"
+        print(f"Vous avez sélectionné {name}.")
+        confirm = Menu.yes_no()
+        if confirm is True:
+            return player
+
+    def change_ranks(self, player_list):
+        length = len(player_list)
+
+
+        player = player_list[int(selected) - 1]
+        name = f"{player['first_name']} {player['last_name']}"
+        print(f"Sélection : {name}.")
+        new_rank = input("Veuillez taper son nouveau classement : ")
+        confirm = Menu.yes_no()
+        if confirm is True:
+            result = (player, new_rank.lower())
+            return result
 
 
 class Rankings(InputMenu, DisplayMenu):
-    @staticmethod
-    def show_list(title, list_players):
-        """Prints a list to be used in player ranking menus."""
-        i = 0
-        rankings = list(sorted(list_players, key=lambda i: i["rank"], reverse=True))
-
-        print(title)
-        for player in list_players:
-            rank = ""
-            for player_r in rankings:
-                if player == player_r:
-                    rank = rankings.index(player_r) + 1
-
-            print(f"\n{i+1}. {player['first_name']} {player['last_name']}")
-            print(f"Date de naissance : {player['birth_date']}")
-            print(f"Genre : {player['gender']}")
-            if rank == 1:
-                print(f"Classement : {player['rank']} points (1ère place)")
-            else:
-                print(f"Classement : {player['rank']} points ({rank}ème place)")
-            i += 1
-
     def players_sorted(self, title, list_players):
-        """
-        Shows player list sorted per names (a) or per rankings (s).
-        """
-        Rankings.show_list(title, list_players)
+        """Shows player list sorted per names (a) or per rankings (s)."""
+        self.display_players_ranked(title, list_players)
 
         answer = self.ask_input(right_answers=["a", "s"],
                     prompt=TextsRanking.players_sorted)
@@ -236,9 +239,7 @@ class Rankings(InputMenu, DisplayMenu):
 
     def tournaments_list(self, list_tournament):
         """Shows a list of all tournaments."""
-        right_answers = ["r", "q"]
         nb_tournaments = len(list_tournament)
-        answer = ""
         i = 0
 
         for tournament in list_tournament:
@@ -247,11 +248,10 @@ class Rankings(InputMenu, DisplayMenu):
             i += 1
 
         # TODO: variation de ask_input qui prend en charge une liste (arg list len?)
-        while Menu.input_ok(right_answers, answer) is False:
-            answer = input(TextsRanking.tournaments_list).lower()
-            if answer.isnumeric() is True:
-                if int(answer) in range(0, nb_tournaments + 1):
-                    return int(answer)
+        answer = self.ask_input(max_range=nb_tournaments,
+                                    prompt=TextsRanking.tournaments_list
+                                    )
+
         return answer
 
     def tournament(self, tournament):
@@ -268,14 +268,13 @@ class Rankings(InputMenu, DisplayMenu):
         for round in attributes[7]:
             i = 0
             print(f"\n{round['name'].upper()}")
-            print(f"Début : {round['start']}")
-            print(f"Fin : {round['end']}")
+            print(f"Début : {round['start']}\nFin : {round['end']}")
             for match in round["matches"]:
+                print(f"MATCH {i+1}")
                 player_one = f"{match[0][0]['first_name']} {match[0][0]['last_name']}"
                 score_one = f"{match[0][1]}"
                 player_two = f"{match[1][0]['first_name']} {match[1][0]['last_name']}"
                 score_two = f"{match[1][1]}"
-                print(f"MATCH {i+1}")
                 print(
                     f"{player_one} (score final : {score_one}) et {player_two} (score final : {score_two})"
                 )
@@ -325,7 +324,7 @@ class TournamentMenu(Menu):
         nb_round = len(tournament.rounds)
         current_round = tournament.rounds[nb_round - 1]
         i = 1
-        print(f"{tournament.name}.\n")
+        print(f"{tournament.name.upper()}.\n")
         print(f"Round actuel : {current_round.name}")
         print(f"Début du round : {current_round.start}")
         print('A tout moment, vous pouvez quitter en tapant "Q".')
@@ -345,45 +344,13 @@ class TournamentMenu(Menu):
         """Shows the tournament's result, printing the winner on top."""
         right_answers = ["1", "q"]
         answer = ""
-        print("SCORES FINAUX\n")
-        i = 0
-        rankings = list(sorted(
-                    list_players, key=lambda i: i["score"], reverse=True))
-        for player in list_players:
-            rank = ""
-            for player_r in rankings:
-                if player == player_r:
-                    rank = rankings.index(player_r) + 1
 
-            print(f"\n{i+1}. {player['first_name']} {player['last_name']}")
-            print(f"Date de naissance : {player['birth_date']}")
-            print(f"Genre : {player['gender']}")
-            if rank == 1:
-                print(f"Classement : {player['score']} points (1ère place)")
-            else:
-                print(f"Classement : {player['score']} points ({rank}ème place)")
-            i += 1
+        print("SCORES FINAUX\n")
+        self.display_players_ranked(tournament["name"], list_players,
+                                    by_score=True)
+
         while Menu.input_ok(right_answers, answer) is False:
             answer = input(Texts.end_menu).lower()
-        return answer
-
-        for round in tournament["rounds"]:
-            i = 0
-            print(f"\n{round['name'][0].upper()}")
-            print(f"Début : {round['start']}")
-            print(f"Durée : {round['end']}")
-            for match in round["matches"]:
-                player_one = f"{match[0][0]['first_name']} {match[0][0]['last_name']}"
-                score_one = f"{match[0][1]}"
-                player_two = f"{match[1][0]['first_name']} {match[1][0]['last_name']}"
-                score_two = f"{match[1][1]}"
-                print(f"MATCH {i+1}")
-                print(
-                    f"{player_one} (score final : {score_one}) et {player_two} (score final : {score_two})"
-                )
-                i += 1
-        while Menu.input_ok(right_answers, answer) is False:
-            answer = input(TextsRanking.rounds).lower()
         return answer
 
     @staticmethod

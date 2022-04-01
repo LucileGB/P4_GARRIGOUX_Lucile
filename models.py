@@ -96,20 +96,6 @@ class Player:
         players_table.update({"score": 0})
 
     @staticmethod
-    def list_abridged(list_to_abridge):
-        """Print an alphabetical, more lisible version of a player list,
-        showing only each player's complete name and birthdate. Also return
-        the alphabetically sorted list."""
-        i = 0
-        abridged_list = Player.alphabetical(list_to_abridge)
-        for player in abridged_list:
-            attributes = list(player.values())
-            print(f"\n{i+1}. {attributes[0]} {attributes[1].upper()}")
-            print(f"{attributes[2]}")
-            i += 1
-        return abridged_list
-
-    @staticmethod
     def list_not_participants():
         Player = Query()
         result = players_table.search(Player.is_playing == "False")

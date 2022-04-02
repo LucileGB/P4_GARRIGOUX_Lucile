@@ -108,6 +108,10 @@ class TextsForms:
                         "3": "Coup rapide"
                         }
 
+    time_control_dict = {"f": "Femme",
+                        "h": "Homme",
+                        }
+
     tournament_json = ["name",
                         "place",
                         "date",
@@ -135,6 +139,16 @@ Choisissez l'une des options suivantes :
 1. Bullet
 2. Blitz
 3. Coup rapide"""
+
+    first_name = "\nEntrez le prénom :"
+
+    last_name = "\nEntrez le nom de famille :"
+
+    birth_day = "\nEntrez la date de naissance :"
+
+    pick_gender = "\nChoisissez un genre (f pour femme, h pour homme) :"
+
+    enter_points = "\nSi le joueur a déjà des points, entrez-les. Sinon, entrez zéro."
 
     not_blank = "Veuillez remplir ce champs."
 

@@ -64,13 +64,6 @@ class FormControl:
             return False
 
 
-    def return_tournament_field(self, prompt, field_type, optional=False,
-                                dict_content=None):
-        return self.return_field(prompt, field_type, previous_view=True,
-                                return_home=True, optional=optional,
-                                dict_content=dict_content)
-
-
     def return_field(self, prompt, field_type, previous_view=None,
                         return_home=False, dict_content=None, optional=False):
         is_right = False
@@ -112,6 +105,13 @@ class FormControl:
             return dict_content[answer]
         else:
             return answer
+
+
+    def return_player_field(self, prompt, field_type
+                                dict_content=None):
+        return self.return_field(prompt, field_type, previous_view=True,
+                                return_home=True,
+                                dict_content=dict_content)
 
 class MainControl(Control):
     def __init__(self):
@@ -206,7 +206,7 @@ class TournamentControl(Control, FormControl):
             }
 
         tournament = models.Tournament(tournament_dict)
-        turnament.save()
+        tournament.insert_tournament()
 
     def run(self):
         current_tournament = models.Tournament.return_last_tournament()
@@ -239,10 +239,11 @@ class PlayerControl(Control):
     def __init__(self):
         self.menu = views.PlayerMenu()
 
+
     def main(self):
         condition = False
         while condition is False:
-            answer = views.PlayerMenu.main()
+            answer = self.menu.main()
             if answer == "1":
                 if len(models.Player.list_not_participants()) == 0:
                     condition = True
@@ -256,6 +257,7 @@ class PlayerControl(Control):
                 PlayerControl.create_player()
             elif choice == "q":
                 sys.exit()
+
 
     def change_rank(self):
         """
@@ -286,41 +288,32 @@ class PlayerControl(Control):
         picked.change_rank(float(new_rank))
 
     def create_player():
-        form = views.PlayerMenu.create_player()
-        if form == "r":
-            views.PlayerMenu.main()
-        elif form == "q":
-            sys.exit
-        else:
-            if FormChecker.check_date(form[2]) is False:
-                print("Champs date de naissance :")
-                new_date = FormChecker.correct_date(form[2])
-                form[2] = new_date
-            if FormChecker.check_gender(form[3]) is False:
-                print("Champs genre :")
-                form[3] = FormChecker.check_gender(form[3])
-            if FormChecker.check_number(form[4]) is False:
-                print("Champs classement :")
-                form[4] = FormChecker.check_number(form[4])
+        player_dict = {
+            "first_name": self.return_player_field(TextsForms.first_name, "string"
+                                                ),
+            "last_name": self.return_player_field(TextsForms.last_name, "string"
+                                                ),
+            "birth_date": self.return_player_field(TextsForms.birth_date, "prev_date"
+                                                ),
+            "gender": self.return_player_field(TextsForms.pick_gender,
+                                                "is_choice",
+                                                dict_content=TextsForms.gender_dict
+                                                ),
+            "rank": self.return_player_field(TextsForms.enter_points, "number"
+                                                ),
+            "score": 0,
+            "is_playing": "False",
+            }
 
-            new_player = models.Player(
-                {
-                    "first_name": form[0],
-                    "last_name": form[1],
-                    "birth_date": form[2],
-                    "gender": form[3],
-                    "rank": int(form[4]),
-                    "score": 0,
-                    "is_playing": "False",
-                }
-            )
-            if new_player.has_double() is True:
-                print("Ce joueur existe déjà.\n")
-                views.PlayerMenu.main()
-            else:
-                new_player.table_insert_player()
-                print("Le joueur a été créé avec succès.\n")
-                PlayerControl.main()
+        player = models.Player(player_dict)
+
+        if new_player.has_double():
+            print("Ce joueur existe déjà.\n")
+            self.menu.main()
+        else:
+            new_player.insert_player()
+            print("Le joueur a été créé avec succès.\n")
+            self.menu.main()
 
     def select_players():
         is_on = True

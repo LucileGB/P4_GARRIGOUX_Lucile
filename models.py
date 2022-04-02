@@ -71,7 +71,7 @@ class Player:
         }
 
 
-    def table_insert_player(self):
+    def insert_player(self):
         player = self.save()
         players_table.insert(player)
 
@@ -334,6 +334,10 @@ class Tournament:
             return False
 
         return False
+
+    def insert_tournament(self):
+        tournament = self.save()
+        players_table.insert(tournament)
 
     def round_start(self):
         """Create the new round and its matches. Since the first round

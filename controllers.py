@@ -3,7 +3,7 @@ import models
 import views
 
 from utils.helper import FormChecker
-from utils.texts import Texts, TextsRanking
+from utils.texts import Texts, TextsRanking, TextsForms
 
 """NB_PLAYERS sets the number of players per tournament.
 NB_ROUNDS sets the number of rounds per tournament."""
@@ -35,17 +35,83 @@ class Control:
 
 
 class FormControl:
-    def check_field(answer, checker=None, error_message=None, optional=False):
-        """Take an answer and an optional checker function.
-        If optional=True, won't raise an error if unfilled."""
-        if optional == False and len(answer) == 0:
+    def check_field(self, answer, validator=None,
+                    error_message=TextsForms.not_blank):
+        """
+        Pass user answer through chosen validator function.
+        """
+        if len(answer) == 0:
             print(error_message)
             return False
 
-        checker(field)
+        if validator:
+            answer = validator(answer)
+            if answer == False:
+                print(error_message)
 
-        return True
+        return answer
 
+
+    def check_list(self, answer, dict_content, error_message=""):
+        """
+        Check whether the answer is in dict_content.
+        """
+        if answer.strip() in dict_content.keys():
+            return True
+
+        else:
+            print(error_message)
+            return False
+
+
+    def return_tournament_field(self, prompt, field_type, optional=False,
+                                dict_content=None):
+        return self.return_field(prompt, field_type, previous_view=True,
+                                return_home=True, optional=optional,
+                                dict_content=dict_content)
+
+
+    def return_field(self, prompt, field_type, previous_view=None,
+                        return_home=False, dict_content=None, optional=False):
+        is_right = False
+
+        while is_right == False:
+            answer = self.menu.free_input(prompt).strip()
+            self.process_answer(answer, previous_view=previous_view,
+                        return_home=return_home)
+
+            if optional == True and len(answer) == 0:
+                return ""
+
+            if field_type == "string":
+                is_right = self.check_field(answer,
+                                    error_message=TextsForms.not_blank)
+
+            if field_type == "number":
+                is_right = self.check_field(answer,
+                                    validator=FormChecker.is_number,
+                                    error_message=TextsForms.checker_number)
+
+            if field_type == "previous_date":
+                is_right = self.check_field(answer,
+                                    validator=FormChecker.is_previous_date,
+                                    error_message=TextsForms.checker_prev_date)
+
+            if field_type == "later_date":
+                is_right = self.check_field(answer,
+                                    validator=FormChecker.is_later_date,
+                                    error_message=TextsForms.checker_later_date)
+
+            if field_type == "is_choice":
+                is_right = self.check_field(answer)
+                is_right = self.check_list(answer,
+                                        dict_content=dict_content,
+                                        error_message=TextsForms.checker_list)
+
+        if field_type == "is_choice":
+            return dict_content[answer]
+        else:
+            return answer
 
 class MainControl(Control):
     def __init__(self):
@@ -71,72 +137,78 @@ class MainControl(Control):
 
 
     def create_tournament(self):
-        while len(models.Player.list_participants()) < NB_PLAYERS:
-            self.players.main()
-
-        self.tournament.init_tournament(models.Player.list_participants())
-        self.tournament.run_tournament()
+        self.tournaments.create()
+        self.tournaments.add_participants()
+        self.tournaments.run()
 
 
     def ongoing_tournament(self):
+        """
+        If there are no ongoing tournament, launch create_tournament.
+        If there is one, but lacking participants, launches add_participants,
+        so we can create a tournament instance and add players at our own pace.
+        Else, run the tournament.
+        """
         tournament = models.Tournament.return_ongoing_tournament()
 
         if tournament == False:
-            self.tournament_menu.create_tournament(from_c=True)
+            self.tournaments.create(from_c=True)
+
+        elif len(models.Player.list_participants()) < NB_PLAYERS:
+            self.tournaments.add_participants()
+            self.tournaments.run()
+
         else:
-            TournamentControl.run_tournament()
+            self.tournaments.run()
 
 
 class TournamentControl(Control, FormControl):
     def __init__(self):
-        self.tournament_menu = views.TournamentMenu()
+        self.menu = views.TournamentMenu()
+        self.participants = PlayerControl()
 
-    def init_tournament(self, list_participants):
-        """
-        Create a tournament instance, fill it with participants,
-        then save it.
-        """
-        tournament_instance = TournamentControl.create_tournament()
+
+    def add_participants(self):
+        tournament = models.Tournament.return_ongoing_tournament()
+
+        while len(models.Player.list_participants()) < NB_PLAYERS:
+            self.players.main()
 
         for player_dict in models.Player.list_participants():
             player = models.Player(player_dict)
-            tournament_instance.players.append(player)
+            tournament.players.append(player)
 
-        tournament_instance.save()
+        tournament.save()
 
 
-    def create_tournament(self):
-        form = views.TournamentMenu.create_tournament()
-        if form == "q":
-            sys.exit()
-        elif form == "r":
-            MainControl.main()
-        else:
-            if FormChecker.check_date(form[2]) is False:
-                print("Erreur sur la date du tournoi.")
-                new_date = FormChecker.correct_date(form[2])
-                form[2] = new_date
-            if FormChecker.check_number(form[3]) is False:
-                print("Merci d'entrer un chiffre pour la durée du tournoi.")
-                form[3] == FormChecker.check_number(form[3])
-            form[4] = FormChecker.control_time(form[4])
-            dict_tournament = {
-                "name": form[0],
-                "place": form[1],
-                "date": form[2],
-                "duration": form[3],
-                "time_control": form[4],
-                "description": form[5],
-                "nb_rounds": NB_ROUNDS,
-                "rounds": [],
-                "players": [],
-                "ended": "no",
+    def create(self, from_c=False):
+        tournament_dict = {
+            "name": self.return_tournament_field(TextsForms.tourn_name, "string"
+                                                ),
+            "place": self.return_tournament_field(TextsForms.tourn_place, "string"
+                                                ),
+            "date": self.return_tournament_field(TextsForms.tourn_date, "later_date"
+                                                ),
+            "duration": self.return_tournament_field(TextsForms.tourn_duration, "number"
+                                                ),
+            "time_control": self.return_tournament_field(TextsForms.time_control,
+                                                "is_choice",
+                                                dict_content=TextsForms.time_control_dict
+                                                ),
+            "description": self.return_tournament_field(TextsForms.tourn_desc,
+                                                "string",
+                                                optional=True
+                                                ),
+            "nb_rounds": NB_ROUNDS,
+            "rounds": [],
+            "players": [],
+            "ended": "no",
             }
-            print("Le tournoi a été créé avec succès.\n")
-            return models.Tournament(dict_tournament)
 
-    @staticmethod
-    def run_tournament():
+        tournament = models.Tournament(tournament_dict)
+        turnament.save()
+
+    def run(self):
         current_tournament = models.Tournament.return_last_tournament()
         while len(current_tournament.rounds) < NB_ROUNDS:
             TournamentControl.round_control()
@@ -253,9 +325,8 @@ class PlayerControl(Control):
     def select_players():
         is_on = True
         while is_on and len(models.Player.list_participants()) < NB_PLAYERS:
-            list_not_participant = models.Player.list_not_participants()
             selection = views.PlayerMenu.select_players(
-                models.Player.list_abridged(list_not_participant),
+                models.Player.list_not_participants(),
                 models.Player.list_participants(),
             )
             if selection == "q":

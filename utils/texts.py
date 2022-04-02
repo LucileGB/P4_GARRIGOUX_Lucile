@@ -85,7 +85,7 @@ R. Retour à l'écran rapport\n"""
 
     rounds = """\nTapez R pour retourner à l'écran du tournoi\n"""
 
-class TextsModels:
+class TextsForms:
     tournament_form = [
         "Nom :",
         "Adresse :",
@@ -102,3 +102,46 @@ class TextsModels:
         "Genre (homme/femme): ",
         "Classement (nombre total de points): ",
     ]
+
+    time_control_dict = {"1": "Bullet",
+                        "2": "Blitz",
+                        "3": "Coup rapide"
+                        }
+
+    tournament_json = ["name",
+                        "place",
+                        "date",
+                        "duration",
+                        "time_control",
+                        "description",
+                        "nb_rounds",
+                        "rounds",
+                        "players",
+                        "ended"
+                        ]
+
+    tourn_name = "\nVeuillez entrer un nom pour le tournoi :\n"
+
+    tourn_place = "\nVeuillez entrer l'adresse du tournoi :\n"
+
+    tourn_date = "\nVeuillez entrer la date du tournoi (format : jour/mois/année):\n"
+
+    tourn_duration = "\nVeuillez entrer la durée du tournoi (en jour) :\n"
+
+    tourn_desc = "\nVeuillez entrer une description (optionnelle) :\n"
+
+    time_control = """
+Choisissez l'une des options suivantes :
+1. Bullet
+2. Blitz
+3. Coup rapide"""
+
+    not_blank = "Veuillez remplir ce champs."
+
+    checker_number = "Veuillez entrer un chiffre valide. Pour les décimales, merci d'utiliser un point à la place de la virgule (exemple : 10.5 au lieu de 10,5).\n"
+
+    checker_prev_date = "Veuillez entrer une date antérieure à aujourd'hui, et au format jour/mois/année."
+
+    checker_later_date = "Veuillez entrer une date postérieure à aujourd'hui, et au format jour/mois/année."
+
+    checker_list = "Option non valide."

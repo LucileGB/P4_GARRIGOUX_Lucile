@@ -25,6 +25,7 @@ class Player:
         self.score = params["score"]
         self.is_playing = params["is_playing"]
 
+
     def change_rank(self, new_value):
         Participant = Query()
         players_table.update(
@@ -34,6 +35,7 @@ class Player:
             & (Participant["birth_date"] == self.birth_date),
         )
 
+
     def is_playing_true(self):
         Participant = Query()
         players_table.update(
@@ -42,6 +44,7 @@ class Player:
             & (Participant["last_name"] == self.last_name)
             & (Participant["birth_date"] == self.birth_date),
         )
+
 
     def has_double(self):
         Player = Query()
@@ -55,6 +58,7 @@ class Player:
         else:
             return True
 
+
     def save(self):
         return {
             "first_name": self.first_name,
@@ -66,9 +70,11 @@ class Player:
             "is_playing": self.is_playing,
         }
 
+
     def table_insert_player(self):
         player = self.save()
         players_table.insert(player)
+
 
     def update_participant(self):
         Participant = Query()
@@ -85,15 +91,18 @@ class Player:
             & (Participant["birth_date"] == self.birth_date),
         )
 
+
     @staticmethod
     def all():
         serialized_players = players_table.all()
         return serialized_players
 
+
     @staticmethod
     def clear_participants():
         players_table.update({"is_playing": "False"})
         players_table.update({"score": 0})
+
 
     @staticmethod
     def list_not_participants():
@@ -101,11 +110,13 @@ class Player:
         result = players_table.search(Player.is_playing == "False")
         return result
 
+
     @staticmethod
     def list_participants():
         Player = Query()
         result = players_table.search(Player.is_playing == "True")
         return result
+
 
     @staticmethod
     def sort_list(unsorted, alpha=False, rank=False, score=True):
@@ -117,12 +128,6 @@ class Player:
             return sorted(unsorted,
                         key=lambda player: (player["score"], player["rank"]),
                         reverse=True)
-
-    @staticmethod
-    def final_ranking_list(tournament):
-        participants = tournament.players
-        players = sorted(participants, key=lambda Player: Player.score, reverse=True)
-        return players
 
 
 class Match:

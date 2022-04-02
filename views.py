@@ -1,6 +1,6 @@
 import gettext
 
-from utils.texts import Texts, TextsRanking, TextsModels
+from utils.texts import Texts, TextsRanking, TextsForms
 
 gettext.install("P4", "/locale")
 
@@ -16,8 +16,20 @@ class InputMenu:
         else:
             return False
 
+    def free_input(self, prompt):
+        """Will return an input, no matter which."""
+        if prompt:
+            print(prompt)
+
+        answer = input("Réponse : ")
+        return answer
+
     def ask_input(self, right_answers=[], prompt=None, max_range=False,
                 is_float=False):
+        """
+        Ask for an answer as long as validate() doesn't return true.
+        If answer is numeric, will return a float or int as needed.
+        """
         answer = "placeholder"
 
         if prompt:
@@ -64,6 +76,7 @@ class DisplayMenu:
         i = 0
 
         print(title)
+
         for player in list_players:
             self.display_player(player, i)
             rank = ranked.index(player) + 1
@@ -74,19 +87,26 @@ class DisplayMenu:
                 print(f"Classement : {player[criteria]} points ({rank}ème place)")
             i += 1
 
+
     def display_tournament(self, tournament):
-        form = TextsModels.tournament_form
+        form = TextsForms.tournament_form
         attributes = list(tournament.values())
         tournament_dict = dict(zip(form, attributes))
 
         for key, value in tournament_dict.items():
             print(f"{key} {value}")
 
+
     def display_player(self, player, index, rank=False):
         print(f"\n{index+1}. {player['first_name']} {player['last_name']}")
         print(f"Date de naissance : {player['birth_date']}")
 
 class Menu(InputMenu):
+    def fill_field(self, prompt):
+        answer = self.free_input(prompt=prompt)
+
+        return answer
+
     @staticmethod
     def change_form(field_list=[]):
         """Take care of swapping one selected article in a list of answers
@@ -108,7 +128,7 @@ class Menu(InputMenu):
 
     @staticmethod
     def fill_form(prompts=[]):
-        """Submit a list of prompts to the user, then returns the results.
+        """Submits a list of prompts to the user, then returns the results.
         If Q or R are submitted, interrupts the process and return them
         immediately."""
         answers = []
@@ -156,9 +176,9 @@ class Menu(InputMenu):
 
     @staticmethod
     def print_results(fields, answers):
-        dict = dict(zip(fields, answers))
+        dictionary = dict(zip(fields, answers))
 
-        for key, value in dict.item:
+        for key, value in dictionary.items():
             print(f"{key}{value}")
 
 
@@ -173,7 +193,7 @@ class PlayerMenu(DisplayMenu, InputMenu):
     def create_player():
         """Returns inputs from the player creation forms. If R or Q are typed,
         interrupts the process and returns them immediately."""
-        form = TextsModels.player_form
+        form = TextsForms.player_form
         print(Texts.menu_create_player)
         results = Menu.fill_form(form)
         if results == "r":
@@ -292,7 +312,7 @@ class TournamentMenu(Menu):
         returns this input immediately.
         If accessed from the 'c' command, which correspond to 'continue', prints
         a warning that there was no ongoing tournament."""
-        form_tournament = TextsModels.tournament_form
+        form_tournament = TextsForms.tournament_form
 
         if from_c == True:
             print("* Aucun tournoi en cours ! Vous pouvez créer un nouveau tournoi ci-dessous : * \n\n")

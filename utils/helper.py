@@ -14,14 +14,6 @@ class FormChecker:
             return False
         return date_string
 
-    def correct_date(input):
-        """Only returns the date once it's correctly inputted."""
-        while FormChecker.check_date(input) is False:
-            new_date = views.Menu.input_new(texts.Texts.wrong_date)
-            new_date = FormChecker.check_date(new_date)
-            if new_date is not False:
-                return new_date
-
     def check_gender(gender):
         genders = ("homme", "femme")
         while gender.lower() not in genders:
@@ -49,3 +41,41 @@ class FormChecker:
             else:
                 result = "Coup rapide"
             return result
+
+    def is_number(number):
+        if str(number).isnumeric() is True:
+            if int(number) > -1:
+                return True
+        else:
+            return False
+
+    def is_date(input):
+        """
+        If user input can be converted in a proper date object, then returns
+        true.
+        """
+        try:
+            split_input = input.split("/")
+            date_string = f"{split_input[2]}-{split_input[1]}-{split_input[0]}"
+            attempt = date.fromisoformat(date_string)
+
+            return attempt
+
+        except Exception:
+            return False
+
+    def is_previous_date(input):
+        date_object = FormChecker.is_date(input)
+
+        if date_object == False or date_object > date.today():
+            return False
+        else:
+            return True
+
+    def is_later_date(input):
+        date_object = FormChecker.is_date(input)
+
+        if date_object == False or date_object < date.today():
+            return False
+        else:
+            return True
